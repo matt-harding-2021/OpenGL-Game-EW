@@ -29,16 +29,13 @@ project "Engine"
 		"%{prj.name}/enginecode/**.h",
 		"%{prj.name}/enginecode/**.cpp",
 		"engine/precompiled/engine_pch.h",
-		"engine/precompiled/engine_pch.cpp",
-		"vendor/stb_image/**.h",
-		"vendor/stb_image/**.cpp"
+		"engine/precompiled/engine_pch.cpp"
 	}
 
 	includedirs
 	{
 		"%{prj.name}/enginecode/",
 		"%{prj.name}/enginecode/include/independent",
-		"%{prj.name}/enginecode/include/platform",
 		"%{prj.name}/precompiled/",
 		"vendor/spdlog/include",
 		"vendor/glfw/include",
@@ -52,7 +49,8 @@ project "Engine"
 	{
 		"GLFW",
 		"Glad",
-		"Freetype"
+		"Freetype",
+		"assimp"
 	}
 	
 	filter "system:windows"
@@ -94,9 +92,7 @@ project "Sandbox"
 		"%{prj.name}/include",
 		"engine/enginecode/",
 		"engine/enginecode/include/independent",
-		"engine/enginecode/include/platform",
 		"engine/precompiled/",
-		"vendor/spdlog/include",
 		"vendor/glm/"
 	}
 
