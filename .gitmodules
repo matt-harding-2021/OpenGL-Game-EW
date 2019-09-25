@@ -10,3 +10,6 @@
 [submodule "vendor/spdlog"]
 	path = vendor/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "devel/vendor/json"]
+	path = devel/vendor/json
+	url = https://github.com/nlohmann/json.git
