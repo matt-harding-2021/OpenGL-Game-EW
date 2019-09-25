@@ -41,7 +41,7 @@ project "Engine"
 		"%{prj.name}/enginecode/include/platform",
 		"%{prj.name}/precompiled/",
 		"vendor/spdlog/include",
-		"vendor/forkedglfw/include",
+		"vendor/glfw/include",
 		"vendor/Glad/include",
 		"vendor/glm/",
 		"vendor/stb_image",
@@ -149,7 +149,7 @@ project "Sandbox"
 			"engine/enginecode/include/platform",
 			"engine/precompiled/",
 			"vendor/spdlog/include",
-			"vendor/forkedglfw/include",
+			"vendor/glfw/include",
 			"vendor/Glad/include",
 			"vendor/glm/",
 			"vendor/stb_image",
@@ -230,7 +230,7 @@ group "Vendor"
 
 
 
-	include "vendor/forkedglfw"
+	include "vendor/glfw"
 	include "vendor/googletest"
 	include "vendor/Glad"
 	include "vendor/freetype2"
