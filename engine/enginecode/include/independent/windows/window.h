@@ -1,11 +1,12 @@
 #pragma once
 
 #include "graphicsContext.h"
-
+#include <string>
+#include <functional>
 
 namespace Engine {
 
-	class Event;
+	class Event; // Be replaced
 
 	struct WindowProperties
 	{
