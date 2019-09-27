@@ -178,18 +178,12 @@ project "Spike"
 	files
 	{
 		"%{prj.name}/include/**.h",
-		"%{prj.name}/src/**.cpp",
-		"vendor/stb_image/**.h",
-		"vendor/stb_image/**.cpp"
+		"%{prj.name}/src/**.cpp"
 	}
 
 	includedirs
 	{
 		"%{prj.name}/include",
-		"engine/enginecode/",
-		"engine/enginecode/independent/include",
-		"engine/enginecode/platform/include",
-		"engine/precompiled/",
 		"vendor/spdlog/include",
 		"vendor/stb_image",
 		"vendor/freetype2/include",
