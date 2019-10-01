@@ -26,6 +26,7 @@ namespace Engine {
 		virtual void close() = 0;
 		virtual ~Window() {};
 		virtual void onUpdate(float timestep) = 0;
+		virtual void onResize(unsigned int width, unsigned int height) = 0;
 		virtual void setVSync(bool VSync) = 0;
 		virtual void setEventCallback(const std::function<void(Event&)>& callback) = 0;
 		virtual unsigned int getWidth() const = 0;
@@ -33,10 +34,10 @@ namespace Engine {
 		virtual void* getNativeWindow() const = 0;
 		virtual bool isFullScreenMode() const = 0;
 		virtual bool isVSync() const = 0;
-		virtual void correctViewport(unsigned int width, unsigned int height) = 0;
 
 		static Window* create(const WindowProperties& properties = WindowProperties());
 	protected:
 		GraphicsContext* m_context;
 	};
 }
+
