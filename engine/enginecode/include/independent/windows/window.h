@@ -37,7 +37,7 @@ namespace Engine {
 
 		static Window* create(const WindowProperties& properties = WindowProperties());
 	protected:
-		GraphicsContext* m_context;
+		std::shared_ptr<GraphicsContext> m_context;
 	};
 }
 
