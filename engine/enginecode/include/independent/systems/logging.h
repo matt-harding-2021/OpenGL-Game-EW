@@ -7,9 +7,11 @@
 #include <memory>
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/ostr.h>
-#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 #include "system.h"
+
+
 
 /**
 \class Logging class for writitng to console
@@ -22,35 +24,18 @@ namespace Engine {
 		~logging();
 		void start(SystemSignal init = SystemSignal::None, ...);
 		void stop(SystemSignal init = SystemSignal::None, ...);
-		bool isRunning() { return b_active; }
 		void log(const std::string& msg);
+		void log(const std::string& msg, const float& flt);
+
+		inline static std::shared_ptr<spdlog::logger> getLogger() { return s_logger; }
 	private:
-		static bool b_active;
 		static std::shared_ptr<spdlog::logger> s_logger;
 	};
-
-	logging::logging()
-	{
-						 
-	}
-	logging::~logging()
-	{
-
-	}
-
-	void logging::start(SystemSignal init = SystemSignal::None, ...)
-	{
-		b_active = true;
-	}
-	void logging::stop(SystemSignal init = SystemSignal::None, ...)
-	{
-		s_logger.reset;
-		b_active = false;
-	}
-
-	void logging::log(const std::string& msg)
-	{
-		if (b_active) s_logger->log(spdlog::level::info, msg);
-	}
-	
 }
+
+#define LOG(...) Engine::logging::getLogger()->log(__VA_ARGS__)
+#define LOG_INFO(...) Engine::logging::getLogger()->info(__VA_ARGS__)
+#define LOG_WARN(...) Engine::logging::getLogger()->warn(__VA_ARGS__)
+#define LOG_ERROR(...) Engine::logging::getLogger()->error(__VA_ARGS__)
+#define LOG_CRITICAL(...) Engine::logging::getLogger()->critical(__VA_ARGS__)
+#define LOG_DEBUG(...) Engine::logging::getLogger()->debug(__VA_ARGS__)
