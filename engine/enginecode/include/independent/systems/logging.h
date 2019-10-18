@@ -40,7 +40,6 @@ namespace Engine {
 
 	void logging::start(SystemSignal init = SystemSignal::None, ...)
 	{
-		
 		b_active = true;
 	}
 	void logging::stop(SystemSignal init = SystemSignal::None, ...)
