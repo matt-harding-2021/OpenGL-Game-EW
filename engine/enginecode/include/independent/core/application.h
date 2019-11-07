@@ -6,6 +6,7 @@
 
 #include "systems/logging.h"
 #include "systems/timer.h"
+#include "systems/events/event.h"
 
 namespace Engine {
 
@@ -26,6 +27,7 @@ namespace Engine {
 	public:
 		virtual ~Application(); //!< Deconstructor
 		inline static Application& getInstance() { return *s_instance; } //!< Instance getter from singleton pattern
+		void onEvent(Event& e); //!< Called when an event happens
 		void run(); //!< Main loop
 	};
 

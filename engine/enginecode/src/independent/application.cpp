@@ -34,7 +34,18 @@ namespace Engine {
 		m_Log.reset();
 	}
 
-	
+	void Application::onEvent(Event & e)
+	{
+		switch (e.getEventType())
+		{
+		case EventType::WindowResize :
+			//WindowResize re = 
+			break;
+		
+		}
+
+		if (e.getEventType() == EventType::WindowResize);
+	}
 
 	void Application::run()
 	{
