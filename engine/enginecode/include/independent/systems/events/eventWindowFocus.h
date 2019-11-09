@@ -16,7 +16,7 @@ namespace Engine {
 	private:
 	public:
 		WindowFocus() {} //!<
-
+		static EventType getStaticType() { return EventType::WindowFocus; }
 		virtual EventType getEventType() const override { return EventType::WindowFocus; }
 		virtual int getCategoryFlags() const override { return EventCategoryWindow; }
 	};

@@ -17,7 +17,7 @@ namespace Engine {
 
 	public:
 		MouseScrolled() {} //!<
-
+		static EventType getStaticType() { return EventType::MouseScrolled; }
 		virtual EventType getEventType() const override { return EventType::MouseScrolled; }
 		virtual int getCategoryFlags() const override { return EventCategoryMouse; }
 	};

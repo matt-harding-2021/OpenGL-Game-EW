@@ -16,7 +16,7 @@ namespace Engine {
 	private:
 	public:
 		WindowLostFocus() {} //!<
-
+		static EventType getStaticType() { return EventType::WindowLostFocus; }
 		virtual EventType getEventType() const override { return EventType::WindowLostFocus; }
 		virtual int getCategoryFlags() const override { return EventCategoryWindow; }
 	};

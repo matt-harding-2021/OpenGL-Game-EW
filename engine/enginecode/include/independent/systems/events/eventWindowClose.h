@@ -17,7 +17,7 @@ namespace Engine {
 		//No data needed
 	public:
 		WindowClose() {} //!<
-
+		static EventType getStaticType() { return EventType::WindowClose; }
 		EventType getEventType() const override { return EventType::WindowClose; }
 		int getCategoryFlags() const override { return EventCategoryWindow; }
 	};

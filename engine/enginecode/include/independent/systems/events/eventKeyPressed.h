@@ -19,7 +19,7 @@ namespace Engine {
 	public:
 		KeyPressed(int keycode, int repeatcount) : m_KeyCode(keycode), m_RepeatCount(repeatcount) {} //!<
 		inline int getRepeateCount() const { return m_RepeatCount; }
-
+		static EventType getStaticType() { return EventType::KeyPressed; }
 		virtual EventType getEventType() const override { return EventType::KeyPressed; }
 		virtual int getCategoryFlags() const override { return EventCategoryKeyboard; }
 	};

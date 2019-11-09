@@ -17,7 +17,7 @@ namespace Engine {
 		int m_KeyCode;
 	public:
 		KeyReleased(int keycode) : m_KeyCode(keycode) {} //!<
-
+		static EventType getStaticType() { return EventType::KeyReleased; }
 		virtual EventType getEventType() const override { return EventType::KeyReleased; }
 		virtual int getCategoryFlags() const override { return EventCategoryKeyboard; }
 	};

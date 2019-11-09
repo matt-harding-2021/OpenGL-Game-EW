@@ -18,7 +18,7 @@ namespace Engine {
 		int m_Height; //<! New window size in y axis
 	public:
 		WindowResize(int width, int height) : m_Width(width), m_Height(height) {} //!<
-
+		static EventType getStaticType() { return EventType::WindowResize; }
 		virtual EventType getEventType() const override { return EventType::WindowResize; }
 		virtual int getCategoryFlags() const override { return EventCategoryWindow; }
 
