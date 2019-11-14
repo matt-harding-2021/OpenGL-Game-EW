@@ -3,19 +3,6 @@
 
 #pragma once
 
-#include "systems/events/eventKeyPressed.h"
-#include "systems/events/eventKeyReleased.h"
-#include "systems/events/eventKeyTyped.h"
-#include "systems/events/eventMouseButtonPressed.h"
-#include "systems/events/eventMouseButtonReleased.h"
-#include "systems/events/eventMouseMoved.h"
-#include "systems/events/eventMouseScrolled.h"
-#include "systems/events/eventWindowClose.h"
-#include "systems/events/eventWindowFocus.h"
-#include "systems/events/eventWindowLostFocus.h"
-#include "systems/events/eventWindowMoved.h"
-#include "systems/events/eventWindowResize.h"
-
 /**
 \class Handling general attributes of all events
 */

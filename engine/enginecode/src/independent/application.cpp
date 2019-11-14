@@ -51,31 +51,31 @@ namespace Engine {
 	}
 	bool Application::onKeyPress(KeyPressed& e)
 	{
-
+		return true;
 	}
 	bool Application::onKeyRelease(KeyReleased& e)
 	{
-
+		return true;
 	}
 	bool Application::onKeyTyped(KeyTyped& e)
 	{
-
+		return true;
 	}
 	bool Application::onMouseButtonPress(MouseButtonPressed& e)
 	{
-
+		return true;
 	}
 	bool Application::onMouseButtonRelease(MouseButtonReleased& e)
 	{
-
+		return true;
 	}
 	bool Application::onMouseMove(MouseMoved& e)
 	{
-
+		return true;
 	}
 	bool Application::onMouseScroll(MouseScrolled& e)
 	{
-
+		return true;
 	}
 	bool Application::onWindowClose(WindowClose & e)
 	{
@@ -85,15 +85,15 @@ namespace Engine {
 	}
 	bool Application::onWindowFocus(WindowFocus& e)
 	{
-
+		return true;
 	}
 	bool Application::onWindowLostFocus(WindowLostFocus& e)
 	{
-
+		return true;
 	}
 	bool Application::onWindowMove(WindowMoved& e)
 	{
-
+		return true;
 	}
 	bool Application::onWindowResize(WindowResize & e)
 	{
