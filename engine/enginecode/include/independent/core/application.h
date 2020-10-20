@@ -6,20 +6,11 @@
 
 #include "systems/logging.h"
 #include "systems/timer.h"
-#include "systems/events/event.h"
-#include "systems/events/eventDispatcher.h"
-#include "systems/events/eventKeyPressed.h"
-#include "systems/events/eventKeyReleased.h"
-#include "systems/events/eventKeyTyped.h"
-#include "systems/events/eventMouseButtonPressed.h"
-#include "systems/events/eventMouseButtonReleased.h"
-#include "systems/events/eventMouseMoved.h"
-#include "systems/events/eventMouseScrolled.h"
-#include "systems/events/eventWindowClose.h"
-#include "systems/events/eventWindowFocus.h"
-#include "systems/events/eventWindowLostFocus.h"
-#include "systems/events/eventWindowMoved.h"
-#include "systems/events/eventWindowResize.h"
+#include "events/event.h"
+#include "events/eventDispatcher.h"
+#include "events/keyEvents.h"
+#include "events/mouseEvents.h"
+#include "events/windowEvents.h"
 
 namespace Engine {
 
@@ -43,18 +34,20 @@ namespace Engine {
 		virtual ~Application(); //!< Deconstructor
 		inline static Application& getInstance() { return *s_instance; } //!< Instance getter from singleton pattern
 		void onEvent(Event& e); //!< Called when an event happens
-		bool onKeyPress(KeyPressed& e);
-		bool onKeyRelease(KeyReleased& e);
-		bool onKeyTyped(KeyTyped& e);
-		bool onMouseButtonPress(MouseButtonPressed& e);
-		bool onMouseButtonRelease(MouseButtonReleased& e);
-		bool onMouseMove(MouseMoved& e);
-		bool onMouseScroll(MouseScrolled& e);
-		bool onWindowClose(WindowClose& e);
-		bool onWindowFocus(WindowFocus& e);
-		bool onWindowLostFocus(WindowLostFocus& e);
-		bool onWindowMove(WindowMoved& e);
-		bool onWindowResize(WindowResize& e);
+
+		bool onKeyPressed(KeyPressedEvent& e);
+		bool onKeyReleased(KeyReleasedEvent& e);
+		bool onKeyTyped(KeyTypedEvent& e);
+		bool onMouseButtonPressed(MouseButtonPressedEvent& e);
+		bool onMouseButtonReleased(MouseButtonPressedEvent& e);
+		bool onMouseMoved(MouseMovedEvent& e);
+		bool onMouseScrolled(MouseScrolledEvent& e);
+		bool onWindowClose(WindowCloseEvent& e);
+		bool onWindowFocus(WindowFocusEvent& e);
+		bool onWindowLostFocus(WindowLostFocusEvent& e);
+		bool onWindowMoved(WindowMovedEvent& e);
+		bool onWindowResize(WindowResizeEvent& e);
+
 		void run(); //!< Main loop
 	};
 

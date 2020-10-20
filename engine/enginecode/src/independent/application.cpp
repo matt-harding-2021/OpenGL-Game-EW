@@ -34,68 +34,27 @@ namespace Engine {
 	void Application::onEvent(Event & e)
 	{
 		EventDispatcher dispatcher(e);
-		dispatcher.dispatch<WindowClose>(std::bind(&Application::onWindowClose, this, std::placeholders::_1));
-		dispatcher.dispatch<WindowResize>(std::bind(&Application::onWindowResize, this, std::placeholders::_1));
-		/*
-		switch (e.getEventType())
-		{
-		case EventType::WindowResize :
-			WindowResize re = (WindowResize&)e;
-			LOG_INFO("Window resize event. Width {0}. Height {1}.", re.getWidth(), re.getHeight());
-			break;
-		
-		}
-
-		if (e.getEventType() == EventType::WindowResize);
-		*/
+		dispatcher.dispatch<WindowCloseEvent>(std::bind(&Application::onWindowClose, this, std::placeholders::_1));
+		dispatcher.dispatch<WindowResizeEvent>(std::bind(&Application::onWindowResize, this, std::placeholders::_1));
 	}
-	bool Application::onKeyPress(KeyPressed& e)
-	{
-		return true;
-	}
-	bool Application::onKeyRelease(KeyReleased& e)
-	{
-		return true;
-	}
-	bool Application::onKeyTyped(KeyTyped& e)
-	{
-		return true;
-	}
-	bool Application::onMouseButtonPress(MouseButtonPressed& e)
-	{
-		return true;
-	}
-	bool Application::onMouseButtonRelease(MouseButtonReleased& e)
-	{
-		return true;
-	}
-	bool Application::onMouseMove(MouseMoved& e)
-	{
-		return true;
-	}
-	bool Application::onMouseScroll(MouseScrolled& e)
-	{
-		return true;
-	}
-	bool Application::onWindowClose(WindowClose & e)
+	
+	bool Application::onKeyPressed(KeyPressedEvent& e) {}
+	bool Application::onKeyReleased(KeyReleasedEvent& e) {}
+	bool Application::onKeyTyped(KeyTypedEvent& e) {}
+	bool Application::onMouseButtonPressed(MouseButtonPressedEvent& e) {}
+	bool Application::onMouseButtonReleased(MouseButtonPressedEvent& e) {}
+	bool Application::onMouseMoved(MouseMovedEvent& e) {}
+	bool Application::onMouseScrolled(MouseScrolledEvent& e) {}
+	bool Application::onWindowClose(WindowCloseEvent& e)
 	{
 		LOG_INFO("Closing Application");
 		bRunning = false;
 		return true;
 	}
-	bool Application::onWindowFocus(WindowFocus& e)
-	{
-		return true;
-	}
-	bool Application::onWindowLostFocus(WindowLostFocus& e)
-	{
-		return true;
-	}
-	bool Application::onWindowMove(WindowMoved& e)
-	{
-		return true;
-	}
-	bool Application::onWindowResize(WindowResize & e)
+	bool Application::onWindowFocus(WindowFocusEvent& e) {}
+	bool Application::onWindowLostFocus(WindowLostFocusEvent& e) {}
+	bool Application::onWindowMoved(WindowMovedEvent& e) {}
+	bool Application::onWindowResize(WindowResizeEvent& e)
 	{
 		LOG_INFO("Resize window to {0}x{1}", e.getWidth(), e.getHeight());
 		return true;
@@ -103,20 +62,31 @@ namespace Engine {
 
 	void Application::run()
 	{
+
 		while (bRunning) {
 			timer::startFrameTimer();
-
-
 
 
 			LOG_INFO("fps: {0}", 1.f / timer::getFrameTime());
 			float totalTimeElapsed = timer::getMarkerTimer();
 			LOG_INFO("totalTimeElapsed: {0}", totalTimeElapsed);
-			if (totalTimeElapsed > 10.f)
+			if (totalTimeElapsed > 3.f)
 			{
-				WindowResize e1(1024, 720);
+				/*
+				KeyPressedEvent e1;//Keycode and repeatcount
+				KeyReleasedEvent e2;
+				KeyTypedEvent e3;
+				MouseButtonPressedEvent e4;
+				MouseButtonPressedEvent e5;
+				MouseMovedEvent e6;
+				MouseScrolledEvent e7;
+				WindowFocusEvent e8;
+				WindowLostFocusEvent e9;
+				WindowMovedEvent e10);
+				*/
+				WindowResizeEvent e1(1024, 720);
 				onEvent(e1);
-				WindowClose e2;
+				WindowCloseEvent e2;
 				onEvent(e2);
 				//LOG_INFO("End Time: {0}", totalTimeElapsed);
 			}
