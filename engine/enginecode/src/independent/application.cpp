@@ -38,22 +38,22 @@ namespace Engine {
 		dispatcher.dispatch<WindowResizeEvent>(std::bind(&Application::onWindowResize, this, std::placeholders::_1));
 	}
 	
-	bool Application::onKeyPressed(KeyPressedEvent& e) {}
-	bool Application::onKeyReleased(KeyReleasedEvent& e) {}
-	bool Application::onKeyTyped(KeyTypedEvent& e) {}
-	bool Application::onMouseButtonPressed(MouseButtonPressedEvent& e) {}
-	bool Application::onMouseButtonReleased(MouseButtonPressedEvent& e) {}
-	bool Application::onMouseMoved(MouseMovedEvent& e) {}
-	bool Application::onMouseScrolled(MouseScrolledEvent& e) {}
+	bool Application::onKeyPressed(KeyPressedEvent& e) { return true; }
+	bool Application::onKeyReleased(KeyReleasedEvent& e) { return true; }
+	bool Application::onKeyTyped(KeyTypedEvent& e) { return true; }
+	bool Application::onMouseButtonPressed(MouseButtonPressedEvent& e) { return true; }
+	bool Application::onMouseButtonReleased(MouseButtonPressedEvent& e) { return true; }
+	bool Application::onMouseMoved(MouseMovedEvent& e) { return true; }
+	bool Application::onMouseScrolled(MouseScrolledEvent& e) { return true; }
 	bool Application::onWindowClose(WindowCloseEvent& e)
 	{
 		LOG_INFO("Closing Application");
 		bRunning = false;
 		return true;
 	}
-	bool Application::onWindowFocus(WindowFocusEvent& e) {}
-	bool Application::onWindowLostFocus(WindowLostFocusEvent& e) {}
-	bool Application::onWindowMoved(WindowMovedEvent& e) {}
+	bool Application::onWindowFocus(WindowFocusEvent& e) { return true; }
+	bool Application::onWindowLostFocus(WindowLostFocusEvent& e) { return true; }
+	bool Application::onWindowMoved(WindowMovedEvent& e) { return true; }
 	bool Application::onWindowResize(WindowResizeEvent& e)
 	{
 		LOG_INFO("Resize window to {0}x{1}", e.getWidth(), e.getHeight());
