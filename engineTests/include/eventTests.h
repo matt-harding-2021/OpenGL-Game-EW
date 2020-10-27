@@ -1,41 +1,38 @@
 #pragma once
 #include <gtest/gtest.h>
 
-#include "systems/events/event.h"
-#include "systems/events/eventDispatcher.h"
-#include "systems/events/eventKeyPressed.h"
-#include "systems/events/eventKeyReleased.h"
-#include "systems/events/eventKeyTyped.h"
-#include "systems/events/eventMouseButtonPressed.h"
-#include "systems/events/eventMouseButtonReleased.h"
-#include "systems/events/eventMouseMoved.h"
-#include "systems/events/eventMouseScrolled.h"
-#include "systems/events/eventWindowClose.h"
-#include "systems/events/eventWindowFocus.h"
-#include "systems/events/eventWindowLostFocus.h"
-#include "systems/events/eventWindowMoved.h"
-#include "systems/events/eventWindowResize.h"
+#include "events/event.h"
+#include "events/eventDispatcher.h"
+#include "events/keyEvents.h"
+#include "events/mouseEvents.h"
+#include "events/windowEvents.h"
 
-namespace Engine {
-	class EngineTests
-	{
-	public:
+const int width = 1024;
+const int height = 720;
+Engine::WindowResizeEvent re(width, height);
+Engine::WindowCloseEvent ce;
+Engine::WindowFocusEvent fe;
+Engine::WindowLostFocusEvent lfe;
+int WinPosX = 200;
+int WinPosY = 250;
+Engine::WindowMovedEvent wme(WinPosX, WinPosY);
 
-	private:
-		const int m_width = 1024;
-		const int m_height = 720;
+int keyCode = 55;
+int keyRepeatCount = 10;
+Engine::KeyPressedEvent kpe(keyCode, keyRepeatCount);
+Engine::KeyReleasedEvent kre(keyCode);
+Engine::KeyTypedEvent kte(keyCode);
 
-		Engine::KeyPressed keypressed;
-		Engine::KeyReleased keyreleased;
-		Engine::KeyTyped keytyped;
-		Engine::MouseButtonPressed mousepressed;
-		Engine::MouseButtonReleased mousereleased;
-		Engine::MouseMoved mousemoved;
-		Engine::MouseScrolled mousescrolled;
-		Engine::WindowClose close;
-		Engine::WindowFocus focus;
-		Engine::WindowLostFocus windowlostfocus;
-		Engine::WindowMoved moved;
-		//Engine::WindowResize resize(m_width, m_height);
-	};
-}
+int mouseButton = 1;
+float MouPosX = 100;
+float MouPosY = 150;
+float offsetX = 30;
+float offsetY = 30;
+Engine::MouseButtonPressedEvent mbpe(mouseButton);
+Engine::MouseButtonReleasedEvent mbre(mouseButton);
+Engine::MouseMovedEvent mme(MouPosX, MouPosY);
+Engine::MouseScrolledEvent mse(offsetX, offsetY);
+
+bool OnResizeTrue(Engine::WindowResizeEvent& e) { return true; }
+bool OnResizeFalse(Engine::WindowResizeEvent& e) { return false; }
+

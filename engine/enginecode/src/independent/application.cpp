@@ -1,6 +1,12 @@
 /** \file application.cpp
 */
 
+/*
+#ifdef NG_PLATFORM_WINDOWS
+#include "GLFWWindowsSystem.h"
+#endif
+*/
+
 #include "engine_pch.h"
 #include "core/application.h"
 
@@ -74,8 +80,8 @@ namespace Engine {
 			{
 				/*
 				KeyPressedEvent e1;//Keycode and repeatcount
-				KeyReleasedEvent e2;
-				KeyTypedEvent e3;
+				KeyReleasedEvent e2;//Keycode
+				KeyTypedEvent e3;//Keycode
 				MouseButtonPressedEvent e4;
 				MouseButtonPressedEvent e5;
 				MouseMovedEvent e6;
