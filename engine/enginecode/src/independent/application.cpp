@@ -1,14 +1,14 @@
-/** \file application.cpp
-*/
-
-/*
-#ifdef NG_PLATFORM_WINDOWS
-#include "GLFWWindowsSystem.h"
-#endif
-*/
-
+/** \file application.cpp */
 #include "engine_pch.h"
+
+#ifdef NG_PLATFORM_WINDOWS
+#include "platform/windows/GLFWWindowsSystem.h"
+#include "platform/windows/GLFWWindowImpl.h"
+#endif
+
+
 #include "core/application.h"
+
 
 namespace Engine {
 
@@ -26,10 +26,23 @@ namespace Engine {
 
 		m_Timer = std::make_shared<timer>();
 		m_Timer->start();
+
+
+#ifdef NG_PLATFORM_WINDOWS
+		m_windowsSystem = std::make_shared<GLFWWindowsSystem>();
+		m_windowsSystem->start();
+
+		WindowProperties winProps;
+		m_Window = std::make_unique<GLFWWindowImpl>(winProps);
+
+#endif
 	}
 
 	Application::~Application()
 	{
+		m_windowsSystem->stop();
+		m_windowsSystem.reset();
+
 		m_Timer->stop();
 		m_Timer.reset();
 		
@@ -76,7 +89,7 @@ namespace Engine {
 			LOG_INFO("fps: {0}", 1.f / timer::getFrameTime());
 			float totalTimeElapsed = timer::getMarkerTimer();
 			LOG_INFO("totalTimeElapsed: {0}", totalTimeElapsed);
-			if (totalTimeElapsed > 3.f)
+			/*if (totalTimeElapsed > 3.f)
 			{
 				/*
 				KeyPressedEvent e1;//Keycode and repeatcount
@@ -89,13 +102,15 @@ namespace Engine {
 				WindowFocusEvent e8;
 				WindowLostFocusEvent e9;
 				WindowMovedEvent e10);
-				*/
+				
 				WindowResizeEvent e1(1024, 720);
 				onEvent(e1);
 				WindowCloseEvent e2;
 				onEvent(e2);
 				//LOG_INFO("End Time: {0}", totalTimeElapsed);
-			}
+			}*/
+
+			m_Window->onUpdate(timer::getFrameTime());
 		}
 	}
 

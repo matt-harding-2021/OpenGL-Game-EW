@@ -6,11 +6,15 @@
 
 #include "systems/logging.h"
 #include "systems/timer.h"
+
 #include "events/event.h"
 #include "events/eventDispatcher.h"
 #include "events/keyEvents.h"
 #include "events/mouseEvents.h"
 #include "events/windowEvents.h"
+
+
+#include "windows/window.h"
 
 namespace Engine {
 
@@ -28,6 +32,10 @@ namespace Engine {
 		static Application* s_instance; //!< Singleton instance of the application
 		std::shared_ptr<logging> m_Log;
 		std::shared_ptr<timer> m_Timer;
+
+
+		std::shared_ptr<System> m_windowsSystem;
+		std::unique_ptr<Window> m_Window;
 
 		bool bRunning = true;
 	public:
