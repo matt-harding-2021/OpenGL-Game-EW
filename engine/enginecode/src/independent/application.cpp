@@ -5,7 +5,7 @@
 #include "platform/windows/GLFWWindowsSystem.h"
 #include "platform/windows/GLFWWindowImpl.h"
 #endif
-
+//next, link events to glfw window
 
 #include "core/application.h"
 
@@ -35,6 +35,7 @@ namespace Engine {
 		WindowProperties winProps;
 		m_Window = std::make_unique<GLFWWindowImpl>(winProps);
 
+		m_Window->setEventCallback(std::bind(&Application::onEvent, this, std::placeholders::_1));
 #endif
 	}
 

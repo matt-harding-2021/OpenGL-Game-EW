@@ -12,42 +12,26 @@ namespace Engine {
 		virtual ~GLFWWindowImpl();
 
 		void onUpdate(float timestep) override;
-
-
-
-		inline unsigned int getWidth() const override { return m_Data.Width; }
-		inline unsigned int getHeight() const override { return m_Data.Height; }
-		bool isFullScreenMode() const override { return m_Data.Fullscreen; }
-		bool isVSync() const override { return m_Data.VSync; }
-		virtual void* getNativeWindow() const override { return m_Window; }
-
-		void setVSync(bool VSync) override;
-		inline void setEventCallback(const std::function<void(Event&)>& callback) override { m_Data.EventCallback = callback; }
-
-
-
-		void init(const WindowProperties& properties);
-		virtual void close() override;
-
-
 		void onResize(unsigned int width, unsigned int height) override { return; }
+		void setVSync(bool VSync) override;
+		void setEventCallback(const std::function<void(Event&)>& callback) override { m_callback = callback; };
 
+		inline unsigned int getWidth() const override { return m_properties.m_width; }
+		inline unsigned int getHeight() const override { return m_properties.m_height; }
 		
+		inline void* getNativeWindow() const override { return m_Window; }
+		
+		inline bool isFullScreenMode() const override { return m_properties.m_isFullScreen; }
+		
+		inline bool isVSync() const override { return m_properties.m_isVSync; }
 
 	private:
 		GLFWwindow* m_Window;
 
-		struct WindowData
-		{
-			
-			std::string Title;
-			unsigned int Width, Height;
-			bool VSync;
-			bool Fullscreen;
-
-			std::function<void(Event&)>& EventCallback = std::function<void(Event&)>();
-		};
-
-		WindowData m_Data;
+		void init(const WindowProperties& properties);
+		virtual void close() override;
+		WindowProperties m_properties;
+		std::function<void(Event&)> m_callback;
+		float m_aspectRatio;
 	};
 }

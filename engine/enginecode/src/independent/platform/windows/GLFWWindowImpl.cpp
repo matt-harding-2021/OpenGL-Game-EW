@@ -1,5 +1,6 @@
 #include "engine_pch.h"
 #include "platform/windows/GLFWWindowImpl.h"
+#include "events/windowEvents.h"
 
 namespace Engine {
 
@@ -16,17 +17,32 @@ namespace Engine {
 	}
 
 	void GLFWWindowImpl::init(const WindowProperties& properties) {
-		m_Data.Title = properties.m_title;
-		m_Data.Height = properties.m_height;
-		m_Data.Width = properties.m_width;
-		m_Data.VSync = properties.m_isVSync;
-		m_Data.Fullscreen = properties.m_isFullScreen;
+		m_properties.m_title = properties.m_title;
+		m_properties.m_height = properties.m_height;
+		m_properties.m_width = properties.m_width;
+		m_properties.m_isVSync = properties.m_isVSync;
+		m_properties.m_isFullScreen = properties.m_isFullScreen;
 	
 
 
-		m_Window = glfwCreateWindow(m_Data.Width, m_Data.Height, m_Data.Title.c_str(), nullptr, nullptr);
+		m_Window = glfwCreateWindow(m_properties.m_width, m_properties.m_height, m_properties.m_title.c_str(), nullptr, nullptr);
 		glfwMakeContextCurrent(m_Window);
-		glfwSetWindowUserPointer(m_Window, &m_Data);
+		glfwSetWindowUserPointer(m_Window, &m_callback);
+
+		glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* win)
+		{
+			std::function<void(Event&)>& callback = *static_cast<std::function<void(Event&)>*>(glfwGetWindowUserPointer(win));
+
+			WindowCloseEvent closeEvent;
+			callback(closeEvent);
+		});
+
+		/*
+		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* win)
+		{
+
+		});
+		*/
 		setVSync(true);
 	}
 
@@ -43,6 +59,7 @@ namespace Engine {
 		if (VSync) glfwSwapInterval(1);
 		else glfwSwapInterval(0);
 
-		m_Data.VSync = VSync;
+		m_properties.m_isVSync = VSync;
 	}
+
 }
