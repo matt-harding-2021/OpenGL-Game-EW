@@ -46,7 +46,7 @@ namespace Engine {
 
 		inline int getXPos() const { return m_xPos; }
 		inline int getYPos() const { return m_yPos; }
-		inline glm::ivec2 getPos() const { glm::ivec2(m_xPos, m_yPos); }
+		inline glm::ivec2 getPos() const { return glm::ivec2(m_xPos, m_yPos); }
 	};
 
 	class WindowResizeEvent : public Event
@@ -62,6 +62,6 @@ namespace Engine {
 
 		inline int getWidth() const { return m_width; }
 		inline int getHeight() const { return m_height; }
-		inline int getSize() const { glm::ivec2(m_width, m_height); }
+		inline glm::ivec2 getSize() const { return glm::ivec2(m_width, m_height); }
 	};
 }

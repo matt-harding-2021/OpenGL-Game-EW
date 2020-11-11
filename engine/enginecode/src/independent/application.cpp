@@ -53,30 +53,69 @@ namespace Engine {
 
 	void Application::onEvent(Event & e)
 	{
+		//LOG_INFO(e);
 		EventDispatcher dispatcher(e);
+		dispatcher.dispatch<KeyPressedEvent>(std::bind(&Application::onKeyPressed, this, std::placeholders::_1));
+		dispatcher.dispatch<KeyReleasedEvent>(std::bind(&Application::onKeyReleased, this, std::placeholders::_1));
+		//typed
+
+		dispatcher.dispatch<MouseButtonPressedEvent>(std::bind(&Application::onMouseButtonPressed, this, std::placeholders::_1));
+		dispatcher.dispatch<MouseButtonReleasedEvent>(std::bind(&Application::onMouseButtonReleased, this, std::placeholders::_1));
+		dispatcher.dispatch<MouseMovedEvent>(std::bind(&Application::onMouseMoved, this, std::placeholders::_1));
+		dispatcher.dispatch<MouseScrolledEvent>(std::bind(&Application::onMouseScrolled, this, std::placeholders::_1));
+
 		dispatcher.dispatch<WindowCloseEvent>(std::bind(&Application::onWindowClose, this, std::placeholders::_1));
+		dispatcher.dispatch<WindowFocusEvent>(std::bind(&Application::onWindowFocus, this, std::placeholders::_1));
+		dispatcher.dispatch<WindowLostFocusEvent>(std::bind(&Application::onWindowLostFocus, this, std::placeholders::_1));
+		dispatcher.dispatch<WindowMovedEvent>(std::bind(&Application::onWindowMoved, this, std::placeholders::_1));
 		dispatcher.dispatch<WindowResizeEvent>(std::bind(&Application::onWindowResize, this, std::placeholders::_1));
 	}
 	
-	bool Application::onKeyPressed(KeyPressedEvent& e) { return true; }
-	bool Application::onKeyReleased(KeyReleasedEvent& e) { return true; }
-	bool Application::onKeyTyped(KeyTypedEvent& e) { return true; }
-	bool Application::onMouseButtonPressed(MouseButtonPressedEvent& e) { return true; }
-	bool Application::onMouseButtonReleased(MouseButtonPressedEvent& e) { return true; }
-	bool Application::onMouseMoved(MouseMovedEvent& e) { return true; }
-	bool Application::onMouseScrolled(MouseScrolledEvent& e) { return true; }
-	bool Application::onWindowClose(WindowCloseEvent& e)
-	{
-		LOG_INFO("Closing Application");
+	bool Application::onKeyPressed(KeyPressedEvent& e) { 
+		if (e.GetRepeatCount() == 0) LOG_INFO("Key Pressed: {0}", e.GetKeyCode());
+		else if (e.GetRepeatCount() == 1) LOG_INFO("Key Repeated: {0}", e.GetKeyCode());
+		return true; 
+	}
+	bool Application::onKeyReleased(KeyReleasedEvent& e) { 
+		LOG_INFO("Key Released: {0}", e.GetKeyCode());
+		return true; 
+	}
+	bool Application::onKeyTyped(KeyTypedEvent& e) { return true; } 
+	bool Application::onMouseButtonPressed(MouseButtonPressedEvent& e) { 
+		LOG_INFO("Mouse Button Pressed: {0}", e.getButton());
+		return true;
+	}
+	bool Application::onMouseButtonReleased(MouseButtonReleasedEvent& e) {
+		LOG_INFO("Mouse Button Released: {0}", e.getButton());
+		return true;
+	}
+	bool Application::onMouseMoved(MouseMovedEvent& e) { 
+		LOG_INFO("Mouse Moved: {0}x{1}", e.getPos().x, e.getPos().y);
+		return true; 
+	}
+	bool Application::onMouseScrolled(MouseScrolledEvent& e) { 
+		LOG_INFO("Mouse Scrolled: {0}x{1}", e.getXOffset(), e.getYOffset());
+		return true; 
+	}
+	bool Application::onWindowClose(WindowCloseEvent& e) {
+		LOG_INFO("Window Closed");
 		bRunning = false;
 		return true;
 	}
-	bool Application::onWindowFocus(WindowFocusEvent& e) { return true; }
-	bool Application::onWindowLostFocus(WindowLostFocusEvent& e) { return true; }
-	bool Application::onWindowMoved(WindowMovedEvent& e) { return true; }
-	bool Application::onWindowResize(WindowResizeEvent& e)
-	{
-		LOG_INFO("Resize window to {0}x{1}", e.getWidth(), e.getHeight());
+	bool Application::onWindowFocus(WindowFocusEvent& e) { 
+		LOG_INFO("Window Focused");
+		return true; 
+	}
+	bool Application::onWindowLostFocus(WindowLostFocusEvent& e) { 
+		LOG_INFO("Window Lost Focus");
+		return true; 
+	}
+	bool Application::onWindowMoved(WindowMovedEvent& e) { 
+		LOG_INFO("Window Moved: {0}x{1}", e.getPos().x, e.getPos().y);
+		return true; 
+	}
+	bool Application::onWindowResize(WindowResizeEvent& e) {
+		LOG_INFO("Window Resized: {0}x{1}", e.getWidth(), e.getHeight());
 		return true;
 	}
 
@@ -87,9 +126,10 @@ namespace Engine {
 			timer::startFrameTimer();
 
 
-			LOG_INFO("fps: {0}", 1.f / timer::getFrameTime());
+			//LOG_INFO("fps: {0}", 1.f / timer::getFrameTime());
 			float totalTimeElapsed = timer::getMarkerTimer();
-			LOG_INFO("totalTimeElapsed: {0}", totalTimeElapsed);
+			//LOG_INFO("totalTimeElapsed: {0}", totalTimeElapsed);
+			
 			/*if (totalTimeElapsed > 3.f)
 			{
 				/*

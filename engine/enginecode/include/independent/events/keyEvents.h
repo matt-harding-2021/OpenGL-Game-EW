@@ -31,7 +31,7 @@ namespace Engine {
 	public:
 		KeyReleasedEvent(int keycode) : KeyEvent(keycode) {}
 
-		static EventType getStaticType() { return EventType::KeyPressed; }
+		static EventType getStaticType() { return EventType::KeyReleased; }
 		virtual EventType getEventType() const override { return getStaticType(); }
 	};
 
