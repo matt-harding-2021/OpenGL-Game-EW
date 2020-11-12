@@ -36,7 +36,9 @@ namespace Engine {
 		m_Window = std::make_unique<GLFWWindowImpl>(winProps);
 
 		m_Window->setEventCallback(std::bind(&Application::onEvent, this, std::placeholders::_1));
+		InputPoller::setNativeWindow(m_Window->getNativeWindow());
 #endif
+
 	}
 
 	Application::~Application()
@@ -53,7 +55,6 @@ namespace Engine {
 
 	void Application::onEvent(Event & e)
 	{
-		//LOG_INFO(e);
 		EventDispatcher dispatcher(e);
 		dispatcher.dispatch<KeyPressedEvent>(std::bind(&Application::onKeyPressed, this, std::placeholders::_1));
 		dispatcher.dispatch<KeyReleasedEvent>(std::bind(&Application::onKeyReleased, this, std::placeholders::_1));
@@ -124,32 +125,13 @@ namespace Engine {
 
 		while (bRunning) {
 			timer::startFrameTimer();
-
-
 			//LOG_INFO("fps: {0}", 1.f / timer::getFrameTime());
 			float totalTimeElapsed = timer::getMarkerTimer();
 			//LOG_INFO("totalTimeElapsed: {0}", totalTimeElapsed);
-			
-			/*if (totalTimeElapsed > 3.f)
-			{
-				/*
-				KeyPressedEvent e1;//Keycode and repeatcount
-				KeyReleasedEvent e2;//Keycode
-				KeyTypedEvent e3;//Keycode
-				MouseButtonPressedEvent e4;
-				MouseButtonPressedEvent e5;
-				MouseMovedEvent e6;
-				MouseScrolledEvent e7;
-				WindowFocusEvent e8;
-				WindowLostFocusEvent e9;
-				WindowMovedEvent e10);
-				
-				WindowResizeEvent e1(1024, 720);
-				onEvent(e1);
-				WindowCloseEvent e2;
-				onEvent(e2);
-				//LOG_INFO("End Time: {0}", totalTimeElapsed);
-			}*/
+
+			if (InputPoller::isKeyPressed(NG_KEY_W)) LOG_ERROR("W Pressed");
+			//if (InputPoller::isMouseButtonPressed(NG_MOUSE_BUTTON_1)) LOG_ERROR("Mouse Button 1 Pressed");
+			//LOG_ERROR("Mouse Pos: {0} x {1}", InputPoller::getMousePosition().x, InputPoller::getMousePosition().y);
 
 			m_Window->onUpdate(timer::getFrameTime());
 		}

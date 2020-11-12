@@ -12,7 +12,8 @@
 #include "events/keyEvents.h"
 #include "events/mouseEvents.h"
 #include "events/windowEvents.h"
-
+#include "events/codes.h"
+#include "events/inputPoller.h"
 
 #include "windows/window.h"
 
@@ -28,8 +29,7 @@ namespace Engine {
 	{
 	protected:
 		Application(); //!< Constructor
-	private:
-		static Application* s_instance; //!< Singleton instance of the application
+
 		std::shared_ptr<logging> m_Log;
 		std::shared_ptr<timer> m_Timer;
 
@@ -37,12 +37,7 @@ namespace Engine {
 		std::shared_ptr<System> m_windowsSystem;
 		std::unique_ptr<Window> m_Window;
 
-		bool bRunning = true;
-	public:
-		virtual ~Application(); //!< Deconstructor
-		inline static Application& getInstance() { return *s_instance; } //!< Instance getter from singleton pattern
 		void onEvent(Event& e); //!< Called when an event happens
-
 		bool onKeyPressed(KeyPressedEvent& e);
 		bool onKeyReleased(KeyReleasedEvent& e);
 		bool onKeyTyped(KeyTypedEvent& e);
@@ -55,11 +50,15 @@ namespace Engine {
 		bool onWindowLostFocus(WindowLostFocusEvent& e);
 		bool onWindowMoved(WindowMovedEvent& e);
 		bool onWindowResize(WindowResizeEvent& e);
-
+	private:
+		static Application* s_instance; //!< Singleton instance of the application
+		bool bRunning = true;
+	public:
+		virtual ~Application(); //!< Deconstructor
+		inline static Application& getInstance() { return *s_instance; } //!< Instance getter from singleton pattern
 		void run(); //!< Main loop
 	};
 
 	// To be defined in users code
 	Application* startApplication(); //!< Function definition which provides an entry hook
-
 }
