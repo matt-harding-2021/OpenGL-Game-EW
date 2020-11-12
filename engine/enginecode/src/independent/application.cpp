@@ -1,6 +1,8 @@
 /** \file application.cpp */
 #include "engine_pch.h"
 
+#include <glad/glad.h>
+
 #ifdef NG_PLATFORM_WINDOWS
 #include "platform/windows/GLFWWindowsSystem.h"
 #include "platform/windows/GLFWWindowImpl.h"
@@ -122,12 +124,17 @@ namespace Engine {
 
 	void Application::run()
 	{
-
+		glEnable(GL_DEPTH);
+		float r= 1.f, g = 0.f, b = 1.0f;
+		glClearColor(r, g, b, 1.f);
 		while (bRunning) {
 			timer::startFrameTimer();
 			//LOG_INFO("fps: {0}", 1.f / timer::getFrameTime());
 			float totalTimeElapsed = timer::getMarkerTimer();
 			//LOG_INFO("totalTimeElapsed: {0}", totalTimeElapsed);
+			
+			//glClearColor(r, g, b, 1.f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			if (InputPoller::isKeyPressed(NG_KEY_W)) LOG_ERROR("W Pressed");
 			//if (InputPoller::isMouseButtonPressed(NG_MOUSE_BUTTON_1)) LOG_ERROR("Mouse Button 1 Pressed");

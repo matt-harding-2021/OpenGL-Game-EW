@@ -11,6 +11,6 @@
 class GraphicsContext
 {
 public:
-	virtual void init() = 0;
-	virtual void swapBuffers() = 0;
+	virtual void init() = 0; //!< Initialise the graphics context for the given windowing API
+	virtual void swapBuffers() = 0; //!< Swap the front and back buffers (Double buffering)
 };

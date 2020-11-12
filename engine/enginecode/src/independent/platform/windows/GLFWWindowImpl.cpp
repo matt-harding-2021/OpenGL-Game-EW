@@ -28,6 +28,10 @@ namespace Engine {
 
 
 		m_Window = glfwCreateWindow(m_properties.m_width, m_properties.m_height, m_properties.m_title.c_str(), nullptr, nullptr);
+
+		m_graphicsContext.reset(new GLFWGraphicsContext(m_Window));
+		m_graphicsContext->init();
+
 		glfwMakeContextCurrent(m_Window);
 		glfwSetWindowUserPointer(m_Window, &m_callback);
 
@@ -130,7 +134,8 @@ namespace Engine {
 
 	void GLFWWindowImpl::onUpdate(float timestep) {
 		glfwPollEvents();
-		glfwSwapBuffers(m_Window);
+		m_graphicsContext->swapBuffers();
+		//glfwSwapBuffers(m_Window);
 	}
 
 	void GLFWWindowImpl::setVSync(bool VSync) {

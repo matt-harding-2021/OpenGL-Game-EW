@@ -1,8 +1,9 @@
 #pragma once
 
+#include <GLFW/glfw3.h>
 #include "systems/logging.h"
 #include "windows/window.h"
-#include <GLFW/glfw3.h>
+#include "GLFWGraphicsContext.h"
 
 namespace Engine {
 	class GLFWWindowImpl : public Window
