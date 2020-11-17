@@ -22,7 +22,10 @@ namespace Engine {
 	/**
 	\class Application
 	Fundemental class of the engine. A singleton which runs the game loop infinitely.
-	Provides ...
+	Provides
+		Event management
+		Window implementation with OpenGL context
+		...
 	*/
 
 	class Application
@@ -52,7 +55,7 @@ namespace Engine {
 		bool onWindowResize(WindowResizeEvent& e);
 	private:
 		static Application* s_instance; //!< Singleton instance of the application
-		bool bRunning = true;
+		bool m_Running = true;
 	public:
 		virtual ~Application(); //!< Deconstructor
 		inline static Application& getInstance() { return *s_instance; } //!< Instance getter from singleton pattern
