@@ -16,6 +16,7 @@
 
 #include "core/application.h"
 
+#include "platform/OpenGL/OpenGLVertexArray.h"
 
 namespace Engine {
 
@@ -63,7 +64,7 @@ namespace Engine {
 	void Application::onEvent(Event & e)
 	{
 		EventDispatcher dispatcher(e);
-		/*
+		
 		dispatcher.dispatch<KeyPressedEvent>(std::bind(&Application::onKeyPressed, this, std::placeholders::_1));
 		dispatcher.dispatch<KeyReleasedEvent>(std::bind(&Application::onKeyReleased, this, std::placeholders::_1));
 		//typed
@@ -78,7 +79,7 @@ namespace Engine {
 		dispatcher.dispatch<WindowLostFocusEvent>(std::bind(&Application::onWindowLostFocus, this, std::placeholders::_1));
 		dispatcher.dispatch<WindowMovedEvent>(std::bind(&Application::onWindowMoved, this, std::placeholders::_1));
 		dispatcher.dispatch<WindowResizeEvent>(std::bind(&Application::onWindowResize, this, std::placeholders::_1));
-		*/
+		
 	}
 	
 	bool Application::onKeyPressed(KeyPressedEvent& e) { 
@@ -217,43 +218,34 @@ namespace Engine {
 #pragma endregion
 
 #pragma region GL_BUFFERS
-		uint32_t cubeVAO, cubeVBO, cubeIBO;
+		std::shared_ptr<OpenGLVertexArray> cubeVAO;
+		std::shared_ptr<OpenGLVertexBuffer> cubeVBO;
+		std::shared_ptr<OpenGLIndexBuffer> cubeIBO;
 
-		glCreateVertexArrays(1, &cubeVAO);
-		glBindVertexArray(cubeVAO);
+		cubeVAO.reset(new OpenGLVertexArray);
 
-		glCreateBuffers(1, &cubeVBO);
-		glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+		BufferLayout cubeBL = { ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2 };
+		cubeVBO.reset(new OpenGLVertexBuffer(cubeVertices, sizeof(cubeVertices), cubeBL));
 
-		glCreateBuffers(1, &cubeIBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
+		cubeIBO.reset(new OpenGLIndexBuffer(cubeIndices, 36));
 
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0); // position
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float))); // Normal
-		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float))); // UV co-ords
+		cubeVAO->addVertexBuffer(cubeVBO);
+		cubeVAO->setIndexBuffer(cubeIBO);
 
-		uint32_t pyramidVAO, pyramidVBO, pyramidIBO;
+		
+		std::shared_ptr<OpenGLVertexArray> pyramidVAO;
+		std::shared_ptr<OpenGLVertexBuffer> pyramidVBO;
+		std::shared_ptr<OpenGLIndexBuffer> pyramidIBO;
 
-		glCreateVertexArrays(1, &pyramidVAO);
-		glBindVertexArray(pyramidVAO);
+		pyramidVAO.reset(new OpenGLVertexArray);
 
-		glCreateBuffers(1, &pyramidVBO);
-		glBindBuffer(GL_ARRAY_BUFFER, pyramidVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(pyramidVertices), pyramidVertices, GL_STATIC_DRAW);
+		BufferLayout pyramidBL = { ShaderDataType::Float3, ShaderDataType::Float3 };
+		pyramidVBO.reset(new OpenGLVertexBuffer(pyramidVertices, sizeof(pyramidVertices), pyramidBL));
 
-		glCreateBuffers(1, &pyramidIBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pyramidIBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(pyramidIndices), pyramidIndices, GL_STATIC_DRAW);
+		pyramidIBO.reset(new OpenGLIndexBuffer(pyramidIndices, 18));
 
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0); // Position
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float))); // Colour
+		pyramidVAO->addVertexBuffer(pyramidVBO);
+		pyramidVAO->setIndexBuffer(pyramidIBO);
 #pragma endregion
 
 
@@ -573,8 +565,8 @@ namespace Engine {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			glUseProgram(FCprogram);
-			glBindVertexArray(pyramidVAO);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pyramidIBO);
+			glBindVertexArray(pyramidVAO->getRenderID());
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pyramidIBO->getRenderID());
 
 			GLuint uniformLocation;
 
@@ -587,11 +579,28 @@ namespace Engine {
 			uniformLocation = glGetUniformLocation(FCprogram, "u_projection");
 			glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, glm::value_ptr(projection));
 
+
+			uniformLocation = glGetUniformLocation(FCprogram, "u_lightColour");
+			glUniform3f(uniformLocation, 1.f, 1.f, 1.f);
+
+			uniformLocation = glGetUniformLocation(FCprogram, "u_lightPos");
+			glUniform3f(uniformLocation, 1.f, 4.f, 6.f);
+
+			uniformLocation = glGetUniformLocation(FCprogram, "u_viewPos");
+			glUniform3f(uniformLocation, 0.f, 0.f, 0.f);
+
+			glBindTexture(GL_TEXTURE_2D, letterTexture);
+			uniformLocation = glGetUniformLocation(FCprogram, "u_texData");
+			glUniform1i(uniformLocation, 0);
+
+
 			glDrawElements(GL_TRIANGLES, 3 * 6, GL_UNSIGNED_INT, nullptr);
 
+			
 			glUseProgram(TPprogram);
-			glBindVertexArray(cubeVAO);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIBO);
+			
+			glBindVertexArray(cubeVAO->getRenderID());
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIBO->getRenderID());
 
 
 			uniformLocation = glGetUniformLocation(TPprogram, "u_model");
@@ -616,31 +625,24 @@ namespace Engine {
 			uniformLocation = glGetUniformLocation(TPprogram, "u_texData");
 			glUniform1i(uniformLocation, 0);
 
-			glDrawElements(GL_TRIANGLES, 3 * 12, GL_UNSIGNED_INT, nullptr);
+			glDrawElements(GL_TRIANGLES, cubeVAO->getDrawCount(), GL_UNSIGNED_INT, nullptr);
 
 			uniformLocation = glGetUniformLocation(TPprogram, "u_model");
 			glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, glm::value_ptr(models[2]));
 
 			glBindTexture(GL_TEXTURE_2D, numberTexture);
 
-			glDrawElements(GL_TRIANGLES, 3 * 12, GL_UNSIGNED_INT, nullptr);
-
+			glDrawElements(GL_TRIANGLES, cubeVAO->getDrawCount(), GL_UNSIGNED_INT, nullptr);
+			
 
 
 
 			m_Window->onUpdate(elapsedTime);
 			elapsedTime = timer::getFrameTime();
 		}
-		glDeleteVertexArrays(1, &cubeVAO);
-		glDeleteBuffers(1, &cubeVBO);
-		glDeleteBuffers(1, &cubeIBO);
 
-		glDeleteVertexArrays(1, &pyramidVAO);
-		glDeleteBuffers(1, &pyramidVBO);
-		glDeleteBuffers(1, &pyramidIBO);
-
-		glDeleteShader(FCprogram);
-		glDeleteShader(TPprogram);
+		glDeleteProgram(FCprogram);
+		glDeleteProgram(TPprogram);
 
 		glDeleteTextures(1, &letterTexture);
 		glDeleteTextures(1, &numberTexture);
