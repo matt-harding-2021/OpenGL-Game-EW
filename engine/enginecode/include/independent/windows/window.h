@@ -6,7 +6,7 @@
 
 namespace Engine {
 
-	class Event; // Be replaced
+	class Event;
 
 	struct WindowProperties
 	{

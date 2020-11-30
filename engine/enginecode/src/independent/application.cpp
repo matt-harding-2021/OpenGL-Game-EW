@@ -18,37 +18,51 @@
 
 #include "platform/OpenGL/OpenGLVertexArray.h"
 
+#include "platform/OpenGL/OpenGLShader.h"
+
 namespace Engine {
 
-	Application* Application::s_instance = nullptr;
+	Application* Application::s_instance = nullptr; //!< Single instance of application ensures only one can be open at a time
 
+	 /** Constructor for the application class
+	 *	 Involves initialising the different aspects of the application class:
+	 *		The window 
+	 *		Event handlers (polling and dispatching)
+	 *		OpenGL rendering
+	 */
 	Application::Application()
 	{
+		/**\ Sets the static instance to this object */
 		if (s_instance == nullptr)
 		{
 			s_instance = this;
 		}
 
-		m_Log = std::make_shared<logging>();
-		m_Log->start();
+		/**\ Creating new instances of the logger and timer
+		*	 Using shared pointers means we don't have to worry about it freeing up memory at end.
+		*/
+		m_Log = std::make_shared<logging>();  
+		m_Log->start(); 
 
 		m_Timer = std::make_shared<timer>();
 		m_Timer->start();
 
 
-#ifdef NG_PLATFORM_WINDOWS
-		m_windowsSystem = std::make_shared<GLFWWindowsSystem>();
-		m_windowsSystem->start();
+#ifdef NG_PLATFORM_WINDOWS //!< If the platform used is windows, we can use OpenGL as it is supported 
+		m_windowsSystem = std::make_shared<GLFWWindowsSystem>(); 
+		m_windowsSystem->start(); //!< Calls GLFWInit() from the GLFW library, this lets us use openGL
 
-		WindowProperties winProps;
-		m_Window = std::make_unique<GLFWWindowImpl>(winProps);
+		WindowProperties winProps; //!< Generates the window properties such as height and width
+		m_Window = std::make_unique<GLFWWindowImpl>(winProps); //!< Using the window properties, create a windows implementation. This is an abstracted class that creates an openGL window
 
-		m_Window->setEventCallback(std::bind(&Application::onEvent, this, std::placeholders::_1));
-		InputPoller::setNativeWindow(m_Window->getNativeWindow());
+		/**\ Along with creating windows, opengl lets us handle user events */
+		m_Window->setEventCallback(std::bind(&Application::onEvent, this, std::placeholders::_1)); //!< Uses the onEvent function whenever opengl detects an event
+		InputPoller::setNativeWindow(m_Window->getNativeWindow());  //!< Refers which specific window we want the events to be polled at
 #endif
 
 	}
 
+	/**\ Very simple clean-up of the different systems used */
 	Application::~Application()
 	{
 		m_windowsSystem->stop();
@@ -61,19 +75,25 @@ namespace Engine {
 		m_Log.reset();
 	}
 
+	/** Used as the glfw event callback
+	*	 onEvent creates a temporary dispatcher that checks through the possible eventTypes and runs the bound function if it matches.
+	*	 This method is for functions that should happen every time a specific event occurs, such as window resizing and closing
+	*/
 	void Application::onEvent(Event & e)
 	{
-		EventDispatcher dispatcher(e);
+		EventDispatcher dispatcher(e); //!< Creating the dispatcher with reference to the event called
 		
+		//!< Key events
 		dispatcher.dispatch<KeyPressedEvent>(std::bind(&Application::onKeyPressed, this, std::placeholders::_1));
 		dispatcher.dispatch<KeyReleasedEvent>(std::bind(&Application::onKeyReleased, this, std::placeholders::_1));
-		//typed
 
+		//!< Mouse events
 		dispatcher.dispatch<MouseButtonPressedEvent>(std::bind(&Application::onMouseButtonPressed, this, std::placeholders::_1));
 		dispatcher.dispatch<MouseButtonReleasedEvent>(std::bind(&Application::onMouseButtonReleased, this, std::placeholders::_1));
 		dispatcher.dispatch<MouseMovedEvent>(std::bind(&Application::onMouseMoved, this, std::placeholders::_1));
 		dispatcher.dispatch<MouseScrolledEvent>(std::bind(&Application::onMouseScrolled, this, std::placeholders::_1));
 
+		//!< Window events
 		dispatcher.dispatch<WindowCloseEvent>(std::bind(&Application::onWindowClose, this, std::placeholders::_1));
 		dispatcher.dispatch<WindowFocusEvent>(std::bind(&Application::onWindowFocus, this, std::placeholders::_1));
 		dispatcher.dispatch<WindowLostFocusEvent>(std::bind(&Application::onWindowLostFocus, this, std::placeholders::_1));
@@ -81,7 +101,7 @@ namespace Engine {
 		dispatcher.dispatch<WindowResizeEvent>(std::bind(&Application::onWindowResize, this, std::placeholders::_1));
 		
 	}
-	
+	/**\ Functions the dispatcher calls depending on event type */
 	bool Application::onKeyPressed(KeyPressedEvent& e) { 
 		if (e.GetRepeatCount() == 0) LOG_INFO("Key Pressed: {0}", e.GetKeyCode());
 		else if (e.GetRepeatCount() == 1) LOG_INFO("Key Repeated: {0}", e.GetKeyCode());
@@ -110,7 +130,7 @@ namespace Engine {
 	}
 	bool Application::onWindowClose(WindowCloseEvent& e) {
 		LOG_INFO("Window Closed");
-		m_Running = false;
+		m_Running = false;  //!< Set the application loop boolean to false
 		return true;
 	}
 	bool Application::onWindowFocus(WindowFocusEvent& e) { 
@@ -130,6 +150,12 @@ namespace Engine {
 		return true;
 	}
 
+
+	/**	Once the app is initialised in entrypoint.h, app.run() begins the actual program. Contains: 
+	*		OpenGL setup 
+	*		Event loop with input polling
+	*		Per frame update functions 
+	*/
 	void Application::run()
 	{
 #pragma region RAW_DATA
@@ -217,10 +243,17 @@ namespace Engine {
 		};
 #pragma endregion
 
+		/**	Implementing the abstracted frame buffers for OpenGL
+		*	Doesn't include any actual openGL library calls.
+		*	This means that other rendering libraries could be used in place of openGL in the future.
+		*
+		*	Rendering buffers allocate memory in the GPU that will be used to hold data about rendering objects (in this instance, a cube and a pyramid).
+		*/
 #pragma region GL_BUFFERS
-		std::shared_ptr<OpenGLVertexArray> cubeVAO;
-		std::shared_ptr<OpenGLVertexBuffer> cubeVBO;
-		std::shared_ptr<OpenGLIndexBuffer> cubeIBO;
+		/**\ Creates new abstracted buffer objects for a cube */
+		std::shared_ptr<OpenGLVertexArray> cubeVAO; //!< Vertex Array Object,
+		std::shared_ptr<OpenGLVertexBuffer> cubeVBO; //!< Vertex Buffer Object,
+		std::shared_ptr<OpenGLIndexBuffer> cubeIBO; //!< Index BufferObject
 
 		cubeVAO.reset(new OpenGLVertexArray);
 
@@ -250,228 +283,17 @@ namespace Engine {
 
 
 #pragma region SHADERS
-		std::string FCvertSrc = R"(
-				#version 440 core
-			
-				layout(location = 0) in vec3 a_vertexPosition;
-				layout(location = 1) in vec3 a_vertexColour;
-				out vec3 fragmentColour;
-				uniform mat4 u_model;
-				uniform mat4 u_view;
-				uniform mat4 u_projection;
-				void main()
-				{
-					fragmentColour = a_vertexColour;
-					gl_Position =  u_projection * u_view * u_model * vec4(a_vertexPosition,1);
-				}
-			)";
 
-		std::string FCFragSrc = R"(
-				#version 440 core
-			
-				layout(location = 0) out vec4 colour;
-				in vec3 fragmentColour;
-				void main()
-				{
-					colour = vec4(fragmentColour, 1.0);
-				}
-		)";
+		std::shared_ptr<OpenGLShader> FCShader;
+		FCShader.reset(new OpenGLShader("./assets/shaders/flatColour.glsl"));
 
-		std::string TPvertSrc = R"(
-				#version 440 core
-			
-				layout(location = 0) in vec3 a_vertexPosition;
-				layout(location = 1) in vec3 a_vertexNormal;
-				layout(location = 2) in vec2 a_texCoord;
-				out vec3 fragmentPos;
-				out vec3 normal;
-				out vec2 texCoord;
-				uniform mat4 u_model;
-				uniform mat4 u_view;
-				uniform mat4 u_projection;
-				void main()
-				{
-					fragmentPos = vec3(u_model * vec4(a_vertexPosition, 1.0));
-					normal = mat3(transpose(inverse(u_model))) * a_vertexNormal;
-					texCoord = vec2(a_texCoord.x, a_texCoord.y);
-					gl_Position =  u_projection * u_view * u_model * vec4(a_vertexPosition,1.0);
-				}
-			)";
+		std::shared_ptr<OpenGLShader> TPShader;
+		TPShader.reset(new OpenGLShader("./assets/shaders/texturedPhong.glsl"));
 
-		std::string TPFragSrc = R"(
-				#version 440 core
-			
-				layout(location = 0) out vec4 colour;
-				in vec3 normal;
-				in vec3 fragmentPos;
-				in vec2 texCoord;
-				uniform vec3 u_lightPos; 
-				uniform vec3 u_viewPos; 
-				uniform vec3 u_lightColour;
-				uniform sampler2D u_texData;
-				void main()
-				{
-					float ambientStrength = 0.4;
-					vec3 ambient = ambientStrength * u_lightColour;
-					vec3 norm = normalize(normal);
-					vec3 lightDir = normalize(u_lightPos - fragmentPos);
-					float diff = max(dot(norm, lightDir), 0.0);
-					vec3 diffuse = diff * u_lightColour;
-					float specularStrength = 0.8;
-					vec3 viewDir = normalize(u_viewPos - fragmentPos);
-					vec3 reflectDir = reflect(-lightDir, norm);  
-					float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64);
-					vec3 specular = specularStrength * spec * u_lightColour;  
-					
-					colour = vec4((ambient + diffuse + specular), 1.0) * texture(u_texData, texCoord);
-				}
-		)";
-
-
-
-		uint32_t FCprogram, TPprogram;
-
-		GLuint FCVertShader = glCreateShader(GL_VERTEX_SHADER);
-
-		const GLchar* source = FCvertSrc.c_str();
-		glShaderSource(FCVertShader, 1, &source, 0);
-		glCompileShader(FCVertShader);
-
-		GLint isCompiled = 0;
-		glGetShaderiv(FCVertShader, GL_COMPILE_STATUS, &isCompiled);
-		if (isCompiled == GL_FALSE)
-		{
-			GLint maxLength = 0;
-			glGetShaderiv(FCVertShader, GL_INFO_LOG_LENGTH, &maxLength);
-
-			std::vector<GLchar> infoLog(maxLength);
-			glGetShaderInfoLog(FCVertShader, maxLength, &maxLength, &infoLog[0]);
-			LOG_ERROR("Shader compile error: {0}", std::string(infoLog.begin(), infoLog.end()));
-
-			glDeleteShader(FCVertShader);
-			return;
-		}
-
-		GLuint FCFragShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-		source = FCFragSrc.c_str();
-		glShaderSource(FCFragShader, 1, &source, 0);
-		glCompileShader(FCFragShader);
-
-		glGetShaderiv(FCFragShader, GL_COMPILE_STATUS, &isCompiled);
-		if (isCompiled == GL_FALSE)
-		{
-			GLint maxLength = 0;
-			glGetShaderiv(FCFragShader, GL_INFO_LOG_LENGTH, &maxLength);
-
-			std::vector<GLchar> infoLog(maxLength);
-			glGetShaderInfoLog(FCFragShader, maxLength, &maxLength, &infoLog[0]);
-			LOG_ERROR("Shader compile error: {0}", std::string(infoLog.begin(), infoLog.end()));
-
-			glDeleteShader(FCFragShader);
-			glDeleteShader(FCVertShader);
-
-			return;
-		}
-
-		FCprogram = glCreateProgram();
-		glAttachShader(FCprogram, FCVertShader);
-		glAttachShader(FCprogram, FCFragShader);
-		glLinkProgram(FCprogram);
-
-		GLint isLinked = 0;
-		glGetProgramiv(FCprogram, GL_LINK_STATUS, (int*)&isLinked);
-		if (isLinked == GL_FALSE)
-		{
-			GLint maxLength = 0;
-			glGetProgramiv(FCprogram, GL_INFO_LOG_LENGTH, &maxLength);
-
-			std::vector<GLchar> infoLog(maxLength);
-			glGetProgramInfoLog(FCprogram, maxLength, &maxLength, &infoLog[0]);
-			LOG_ERROR("Shader linking error: {0}", std::string(infoLog.begin(), infoLog.end()));
-
-			glDeleteProgram(FCprogram);
-			glDeleteShader(FCVertShader);
-			glDeleteShader(FCFragShader);
-
-			return;
-		}
-
-		glDetachShader(FCprogram, FCVertShader);
-		glDetachShader(FCprogram, FCFragShader);
-
-
-		GLuint TPVertShader = glCreateShader(GL_VERTEX_SHADER);
-
-		source = TPvertSrc.c_str();
-		glShaderSource(TPVertShader, 1, &source, 0);
-		glCompileShader(TPVertShader);
-
-		isCompiled = 0;
-		glGetShaderiv(TPVertShader, GL_COMPILE_STATUS, &isCompiled);
-		if (isCompiled == GL_FALSE)
-		{
-			GLint maxLength = 0;
-			glGetShaderiv(TPVertShader, GL_INFO_LOG_LENGTH, &maxLength);
-
-			std::vector<GLchar> infoLog(maxLength);
-			glGetShaderInfoLog(TPVertShader, maxLength, &maxLength, &infoLog[0]);
-			LOG_ERROR("Shader compile error: {0}", std::string(infoLog.begin(), infoLog.end()));
-
-			glDeleteShader(TPVertShader);
-			return;
-		}
-
-		GLuint TPFragShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-		source = TPFragSrc.c_str();
-		glShaderSource(TPFragShader, 1, &source, 0);
-		glCompileShader(TPFragShader);
-
-		glGetShaderiv(TPFragShader, GL_COMPILE_STATUS, &isCompiled);
-		if (isCompiled == GL_FALSE)
-		{
-			GLint maxLength = 0;
-			glGetShaderiv(TPFragShader, GL_INFO_LOG_LENGTH, &maxLength);
-
-			std::vector<GLchar> infoLog(maxLength);
-			glGetShaderInfoLog(TPFragShader, maxLength, &maxLength, &infoLog[0]);
-			LOG_ERROR("Shader compile error: {0}", std::string(infoLog.begin(), infoLog.end()));
-
-			glDeleteShader(TPFragShader);
-			glDeleteShader(TPVertShader);
-
-			return;
-		}
-
-		TPprogram = glCreateProgram();
-		glAttachShader(TPprogram, TPVertShader);
-		glAttachShader(TPprogram, TPFragShader);
-		glLinkProgram(TPprogram);
-
-		isLinked = 0;
-		glGetProgramiv(TPprogram, GL_LINK_STATUS, (int*)&isLinked);
-		if (isLinked == GL_FALSE)
-		{
-			GLint maxLength = 0;
-			glGetProgramiv(TPprogram, GL_INFO_LOG_LENGTH, &maxLength);
-
-			std::vector<GLchar> infoLog(maxLength);
-			glGetProgramInfoLog(TPprogram, maxLength, &maxLength, &infoLog[0]);
-			LOG_ERROR("Shader linking error: {0}", std::string(infoLog.begin(), infoLog.end()));
-
-			glDeleteProgram(TPprogram);
-			glDeleteShader(TPVertShader);
-			glDeleteShader(TPFragShader);
-
-			return;
-		}
-
-		glDetachShader(TPprogram, TPVertShader);
-		glDetachShader(TPprogram, TPFragShader);
 #pragma endregion 
 
 #pragma region TEXTURES
+		/*Test pyramid texture*/
 
 		uint32_t letterTexture, numberTexture;
 
@@ -543,6 +365,11 @@ namespace Engine {
 		glEnable(GL_DEPTH_TEST);
 		glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
 		float elapsedTime = 0;
+
+		/**	The main event loop for the application. Contains:
+		*	Event polling
+		*	Update functions
+		*/
 		while (m_Running) {
 			timer::startFrameTimer();
 			//LOG_INFO("fps: {0}", 1.f / timer::getFrameTime());
@@ -554,7 +381,6 @@ namespace Engine {
 			//if (InputPoller::isMouseButtonPressed(NG_MOUSE_BUTTON_1)) LOG_ERROR("Mouse Button 1 Pressed");
 			//LOG_ERROR("Mouse Pos: {0} x {1}", InputPoller::getMousePosition().x, InputPoller::getMousePosition().y);
 
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
 
@@ -564,70 +390,73 @@ namespace Engine {
 			// Do frame stuff
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			glUseProgram(FCprogram);
+			glUseProgram(FCShader->getID());
 			glBindVertexArray(pyramidVAO->getRenderID());
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pyramidIBO->getRenderID());
 
 			GLuint uniformLocation;
 
-			uniformLocation = glGetUniformLocation(FCprogram, "u_model");
+			uniformLocation = glGetUniformLocation(FCShader->getID(), "u_model");
 			glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, glm::value_ptr(models[0])); // Must include <glm/gtc/type_ptr.hpp>
 
-			uniformLocation = glGetUniformLocation(FCprogram, "u_view");
+			uniformLocation = glGetUniformLocation(FCShader->getID(), "u_view");
 			glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, glm::value_ptr(view));
 
-			uniformLocation = glGetUniformLocation(FCprogram, "u_projection");
+			uniformLocation = glGetUniformLocation(FCShader->getID(), "u_projection");
 			glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, glm::value_ptr(projection));
 
-
-			uniformLocation = glGetUniformLocation(FCprogram, "u_lightColour");
+			/*
+			uniformLocation = glGetUniformLocation(FCShader->getID(), "u_lightColour");
 			glUniform3f(uniformLocation, 1.f, 1.f, 1.f);
 
-			uniformLocation = glGetUniformLocation(FCprogram, "u_lightPos");
+			uniformLocation = glGetUniformLocation(FCShader->getID(), "u_lightPos");
 			glUniform3f(uniformLocation, 1.f, 4.f, 6.f);
 
-			uniformLocation = glGetUniformLocation(FCprogram, "u_viewPos");
+			uniformLocation = glGetUniformLocation(FCShader->getID(), "u_viewPos");
 			glUniform3f(uniformLocation, 0.f, 0.f, 0.f);
 
 			glBindTexture(GL_TEXTURE_2D, letterTexture);
-			uniformLocation = glGetUniformLocation(FCprogram, "u_texData");
+			uniformLocation = glGetUniformLocation(FCShader->getID(), "u_texData");
 			glUniform1i(uniformLocation, 0);
-
+			*/
 
 			glDrawElements(GL_TRIANGLES, 3 * 6, GL_UNSIGNED_INT, nullptr);
 
 			
-			glUseProgram(TPprogram);
+
+
+
+			glUseProgram(TPShader->getID());
 			
 			glBindVertexArray(cubeVAO->getRenderID());
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIBO->getRenderID());
 
 
-			uniformLocation = glGetUniformLocation(TPprogram, "u_model");
+			uniformLocation = glGetUniformLocation(TPShader->getID(), "u_model");
 			glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, glm::value_ptr(models[1]));
 
-			uniformLocation = glGetUniformLocation(TPprogram, "u_view");
+			uniformLocation = glGetUniformLocation(TPShader->getID(), "u_view");
 			glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, glm::value_ptr(view));
 
-			uniformLocation = glGetUniformLocation(TPprogram, "u_projection");
+			uniformLocation = glGetUniformLocation(TPShader->getID(), "u_projection");
 			glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, glm::value_ptr(projection));
 
-			uniformLocation = glGetUniformLocation(TPprogram, "u_lightColour");
+			uniformLocation = glGetUniformLocation(TPShader->getID(), "u_lightColour");
 			glUniform3f(uniformLocation, 1.f, 1.f, 1.f);
 
-			uniformLocation = glGetUniformLocation(TPprogram, "u_lightPos");
+			uniformLocation = glGetUniformLocation(TPShader->getID(), "u_lightPos");
 			glUniform3f(uniformLocation, 1.f, 4.f, 6.f);
 
-			uniformLocation = glGetUniformLocation(TPprogram, "u_viewPos");
+			uniformLocation = glGetUniformLocation(TPShader->getID(), "u_viewPos");
 			glUniform3f(uniformLocation, 0.f, 0.f, 0.f);
 
 			glBindTexture(GL_TEXTURE_2D, letterTexture);
-			uniformLocation = glGetUniformLocation(TPprogram, "u_texData");
+			uniformLocation = glGetUniformLocation(TPShader->getID(), "u_texData");
 			glUniform1i(uniformLocation, 0);
 
 			glDrawElements(GL_TRIANGLES, cubeVAO->getDrawCount(), GL_UNSIGNED_INT, nullptr);
 
-			uniformLocation = glGetUniformLocation(TPprogram, "u_model");
+			uniformLocation = glGetUniformLocation(TPShader->getID(), "u_model");
 			glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, glm::value_ptr(models[2]));
 
 			glBindTexture(GL_TEXTURE_2D, numberTexture);
@@ -640,9 +469,6 @@ namespace Engine {
 			m_Window->onUpdate(elapsedTime);
 			elapsedTime = timer::getFrameTime();
 		}
-
-		glDeleteProgram(FCprogram);
-		glDeleteProgram(TPprogram);
 
 		glDeleteTextures(1, &letterTexture);
 		glDeleteTextures(1, &numberTexture);
