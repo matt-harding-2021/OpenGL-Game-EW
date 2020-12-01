@@ -8,17 +8,25 @@
 #include "platform/windows/GLFWWindowImpl.h"
 #endif
 
+/* stb_image now in OpenGLTexture.cpp
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+*/
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "core/application.h"
 
-#include "platform/OpenGL/OpenGLVertexArray.h"
+#include "rendering/indexBuffer.h"
+#include "rendering/vertexBuffer.h"
+#include "rendering/vertexArray.h"
+#include "rendering/shader.h"
 
 #include "platform/OpenGL/OpenGLShader.h"
+#include "platform/OpenGL/OpenGLTexture.h"
+
+#include "rendering/subTexture.h"
 
 namespace Engine {
 
@@ -158,8 +166,60 @@ namespace Engine {
 	*/
 	void Application::run()
 	{
-#pragma region RAW_DATA
 
+	/**	Implemnting the abstracted OpenGL Textures
+	*
+	*/
+#pragma region TEXTURES
+
+		std::shared_ptr<OpenGLTexture> textureAtlas;
+		//letterTexture.reset(new OpenGLTexture("assets/textures/letterCube.png"));
+		textureAtlas.reset(new OpenGLTexture("assets/textures/letterAndNumberCube.png"));
+
+		/*
+		std::shared_ptr<OpenGLTexture> numberTexture;
+		numberTexture.reset(new OpenGLTexture("assets/textures/numberCube.png"));
+		*/
+
+		SubTexture letterTexture(textureAtlas, { 0.f, 0.f }, { 1.f, 0.5f });
+		SubTexture numberTexture(textureAtlas, { 0.f, 0.5f }, { 1.f, 1.f });
+
+#pragma endregion
+
+
+#pragma region RAW_DATA
+		float cubeVertices[8 * 24] = {
+			//	 <------ Pos ------>  <--- normal --->  <-- UV -->
+				 0.5f,  0.5f, -0.5f,  0.f,  0.f, -1.f,	letterTexture.transformUV(0.f,   0.f).x,	letterTexture.transformUV(0.f,   0.f).y,
+				 0.5f, -0.5f, -0.5f,  0.f,  0.f, -1.f,	letterTexture.transformUV(0.f,   0.5f).x,	letterTexture.transformUV(0.f,   0.5f).y,
+				-0.5f, -0.5f, -0.5f,  0.f,  0.f, -1.f,	letterTexture.transformUV(0.33f, 0.5f).x,	letterTexture.transformUV(0.33f, 0.5f).y,
+				-0.5f,  0.5f, -0.5f,  0.f,  0.f, -1.f,	letterTexture.transformUV(0.33f, 0.f).x,	letterTexture.transformUV(0.33f, 0.f).y,
+				-0.5f, -0.5f, 0.5f,   0.f,  0.f,  1.f,	letterTexture.transformUV(0.33f, 0.5f).x,	letterTexture.transformUV(0.33f, 0.5f).y,
+				 0.5f, -0.5f, 0.5f,   0.f,  0.f,  1.f,	letterTexture.transformUV(0.66f, 0.5f).x,	letterTexture.transformUV(0.66f, 0.5f).y,
+				 0.5f,  0.5f, 0.5f,   0.f,  0.f,  1.f,	letterTexture.transformUV(0.66f, 0.f).x,	letterTexture.transformUV(0.66f, 0.f).y,
+				-0.5f,  0.5f, 0.5f,   0.f,  0.f,  1.f,	letterTexture.transformUV(0.33,  0.f).x,	letterTexture.transformUV(0.33,  0.f).y
+																										 
+				-0.5f, -0.5f, -0.5f,  0.f, -1.f,  0.f,	letterTexture.transformUV(1.f,   0.f).x,	letterTexture.transformUV(1.f,   0.f).y,
+				 0.5f, -0.5f, -0.5f,  0.f, -1.f,  0.f,	letterTexture.transformUV(0.66f, 0.f).x,	letterTexture.transformUV(0.66f, 0.f).y,
+				 0.5f, -0.5f, 0.5f,   0.f, -1.f,  0.f,	letterTexture.transformUV(0.66f, 0.5f).x,	letterTexture.transformUV(0.66f, 0.5f).y,
+				-0.5f, -0.5f, 0.5f,   0.f, -1.f,  0.f,	letterTexture.transformUV(1.0f,  0.5f).x,	letterTexture.transformUV(1.0f,  0.5f).y,
+																																		   
+				 0.5f,  0.5f, 0.5f,   0.f,  1.f,  0.f,	letterTexture.transformUV(0.f,   0.5f).x,	letterTexture.transformUV(0.f,   0.5f).y,
+				 0.5f,  0.5f, -0.5f,  0.f,  1.f,  0.f,	letterTexture.transformUV(0.f,   1.0f).x,	letterTexture.transformUV(0.f,   1.0f).y,
+				-0.5f,  0.5f, -0.5f,  0.f,  1.f,  0.f,	letterTexture.transformUV(0.33f, 1.0f).x,	letterTexture.transformUV(0.33f, 1.0f).y,
+				-0.5f,  0.5f, 0.5f,   0.f,  1.f,  0.f,	letterTexture.transformUV(0.3f,  0.5f).x,	letterTexture.transformUV(0.3f,  0.5f).y,
+																																		   
+				-0.5f,  0.5f, 0.5f,  -1.f,  0.f,  0.f,	letterTexture.transformUV(0.66f, 0.5f).x,	letterTexture.transformUV(0.66f, 0.5f).y,
+				-0.5f,  0.5f, -0.5f, -1.f,  0.f,  0.f,	letterTexture.transformUV(0.33f, 0.5f).x,	letterTexture.transformUV(0.33f, 0.5f).y,
+				-0.5f, -0.5f, -0.5f, -1.f,  0.f,  0.f,	letterTexture.transformUV(0.33f, 1.0f).x,	letterTexture.transformUV(0.33f, 1.0f).y,
+				-0.5f, -0.5f, 0.5f,  -1.f,  0.f,  0.f,	letterTexture.transformUV(0.66f, 1.0f).x,	letterTexture.transformUV(0.66f, 1.0f).y,
+																																		   
+				 0.5f, -0.5f, -0.5f,  1.f,  0.f,  0.f,	letterTexture.transformUV(1.0f,  1.0f).x,	letterTexture.transformUV(1.0f,  1.0f).y,
+				 0.5f,  0.5f, -0.5f,  1.f,  0.f,  0.f,	letterTexture.transformUV(1.0f,  0.5f).x,	letterTexture.transformUV(1.0f,  0.5f).y,
+				 0.5f,  0.5f, 0.5f,   1.f,  0.f,  0.f,	letterTexture.transformUV(0.66f, 0.5f).x,	letterTexture.transformUV(0.66f, 0.5f).y,
+				 0.5f, -0.5f, 0.5f,   1.f,  0.f,  0.f,	letterTexture.transformUV(0.66f, 1.0f).x,	letterTexture.transformUV(0.66f, 1.0f).y
+		};
+		/*
 		float cubeVertices[8 * 24] = {
 			//	 <------ Pos ------>  <--- normal --->  <-- UV -->
 				 0.5f,  0.5f, -0.5f,  0.f,  0.f, -1.f,  0.f,   0.f,
@@ -192,7 +252,7 @@ namespace Engine {
 				 0.5f,  0.5f, 0.5f,   1.f,  0.f,  0.f,  0.66f, 0.5f,
 				 0.5f, -0.5f, 0.5f,   1.f,  0.f,  0.f,  0.66f, 1.0f
 		};
-
+		*/
 		float pyramidVertices[6 * 16] = {
 			//	 <------ Pos ------>  <--- colour ---> 
 				-0.5f, -0.5f, -0.5f,  0.8f, 0.2f, 0.8f, //  square Magneta
@@ -251,39 +311,54 @@ namespace Engine {
 		*/
 #pragma region GL_BUFFERS
 		/**\ Creates new abstracted buffer objects for a cube */
-		std::shared_ptr<OpenGLVertexArray> cubeVAO; //!< Vertex Array Object,
-		std::shared_ptr<OpenGLVertexBuffer> cubeVBO; //!< Vertex Buffer Object,
-		std::shared_ptr<OpenGLIndexBuffer> cubeIBO; //!< Index BufferObject
+		std::shared_ptr<VertexArray> cubeVAO; //!< Vertex Array Object,
+		std::shared_ptr<VertexBuffer> cubeVBO; //!< Vertex Buffer Object,
+		std::shared_ptr<IndexBuffer> cubeIBO; //!< Index BufferObject
 
-		cubeVAO.reset(new OpenGLVertexArray);
+		cubeVAO.reset(VertexArray::create());
 
 		BufferLayout cubeBL = { ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2 };
-		cubeVBO.reset(new OpenGLVertexBuffer(cubeVertices, sizeof(cubeVertices), cubeBL));
+		cubeVBO.reset(VertexBuffer::create(cubeVertices, sizeof(cubeVertices), cubeBL));
 
-		cubeIBO.reset(new OpenGLIndexBuffer(cubeIndices, 36));
+		cubeIBO.reset(IndexBuffer::create(cubeIndices, 36));
 
 		cubeVAO->addVertexBuffer(cubeVBO);
 		cubeVAO->setIndexBuffer(cubeIBO);
 
 		
-		std::shared_ptr<OpenGLVertexArray> pyramidVAO;
-		std::shared_ptr<OpenGLVertexBuffer> pyramidVBO;
-		std::shared_ptr<OpenGLIndexBuffer> pyramidIBO;
+		std::shared_ptr<VertexArray> pyramidVAO;
+		std::shared_ptr<VertexBuffer> pyramidVBO;
+		std::shared_ptr<IndexBuffer> pyramidIBO;
 
-		pyramidVAO.reset(new OpenGLVertexArray);
+		pyramidVAO.reset(VertexArray::create());
 
 		BufferLayout pyramidBL = { ShaderDataType::Float3, ShaderDataType::Float3 };
-		pyramidVBO.reset(new OpenGLVertexBuffer(pyramidVertices, sizeof(pyramidVertices), pyramidBL));
+		pyramidVBO.reset(VertexBuffer::create(pyramidVertices, sizeof(pyramidVertices), pyramidBL));
 
-		pyramidIBO.reset(new OpenGLIndexBuffer(pyramidIndices, 18));
+		pyramidIBO.reset(IndexBuffer::create(pyramidIndices, 18));
 
 		pyramidVAO->addVertexBuffer(pyramidVBO);
 		pyramidVAO->setIndexBuffer(pyramidIBO);
 #pragma endregion
 
-
+		/**	Implemnting the abstracted OpenGL Shaders
+		*	Using the Phong lighting model
+		*	Each shader object reads a text file and compiles it line by line into the OpenGL library shaders
+		*/
 #pragma region SHADERS
 
+		/*	API AGNOSTIC SHADER
+			CHANGE FILES: 
+		*		rederAPI.cpp
+		*		shader.h
+		*		OpenGLShader.h
+
+		std::shared_ptr<Shader> FCShader;
+		FCShader.reset(Shader::create("./assets/shaders/flatColour.glsl"));
+
+		std::shared_ptr<Shader> TPShader;
+		TPShader.reset(Shader::create("./assets/shaders/texturedPhong.glsl"));
+		*/
 		std::shared_ptr<OpenGLShader> FCShader;
 		FCShader.reset(new OpenGLShader("./assets/shaders/flatColour.glsl"));
 
@@ -291,64 +366,6 @@ namespace Engine {
 		TPShader.reset(new OpenGLShader("./assets/shaders/texturedPhong.glsl"));
 
 #pragma endregion 
-
-#pragma region TEXTURES
-		/*Test pyramid texture*/
-
-		uint32_t letterTexture, numberTexture;
-
-		glGenTextures(1, &letterTexture);
-		glBindTexture(GL_TEXTURE_2D, letterTexture);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		int width, height, channels;
-
-		/* Need to add
-		#define STB_IMAGE_IMPLEMENTATION
-		#include "stb_image.h"
-		*/
-		unsigned char* data = stbi_load("assets/textures/letterCube.png", &width, &height, &channels, 0);
-		if (data)
-		{
-			if (channels == 3) glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-			else if (channels == 4) glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-			else return;
-			glGenerateMipmap(GL_TEXTURE_2D);
-		}
-		else
-		{
-			return;
-		}
-		stbi_image_free(data);
-
-		glGenTextures(1, &numberTexture);
-		glBindTexture(GL_TEXTURE_2D, numberTexture);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		data = stbi_load("assets/textures/numberCube.png", &width, &height, &channels, 0);
-		if (data)
-		{
-			if (channels == 3) glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-			else if (channels == 4) glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-			else return;
-			glGenerateMipmap(GL_TEXTURE_2D);
-		}
-		else
-		{
-			return;
-		}
-		stbi_image_free(data);
-#pragma endregion
 
 		glm::mat4 view = glm::lookAt(
 			glm::vec3(0.f, 0.f, 0.f),
@@ -371,6 +388,7 @@ namespace Engine {
 		*	Update functions
 		*/
 		while (m_Running) {
+
 			timer::startFrameTimer();
 			//LOG_INFO("fps: {0}", 1.f / timer::getFrameTime());
 			float totalTimeElapsed = timer::getMarkerTimer();
@@ -379,7 +397,7 @@ namespace Engine {
 
 			//if (InputPoller::isKeyPressed(NG_KEY_W)) LOG_INFO("Input Poller: W Pressed");
 			//if (InputPoller::isMouseButtonPressed(NG_MOUSE_BUTTON_1)) LOG_ERROR("Mouse Button 1 Pressed");
-			//LOG_ERROR("Mouse Pos: {0} x {1}", InputPoller::getMousePosition().x, InputPoller::getMousePosition().y);
+			//LOG_INFO("Mouse Pos: {0} x {1}", InputPoller::getMousePosition().x, InputPoller::getMousePosition().y);
 
 
 
@@ -450,7 +468,7 @@ namespace Engine {
 			uniformLocation = glGetUniformLocation(TPShader->getID(), "u_viewPos");
 			glUniform3f(uniformLocation, 0.f, 0.f, 0.f);
 
-			glBindTexture(GL_TEXTURE_2D, letterTexture);
+			glBindTexture(GL_TEXTURE_2D, textureAtlas->getID());
 			uniformLocation = glGetUniformLocation(TPShader->getID(), "u_texData");
 			glUniform1i(uniformLocation, 0);
 
@@ -459,7 +477,7 @@ namespace Engine {
 			uniformLocation = glGetUniformLocation(TPShader->getID(), "u_model");
 			glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, glm::value_ptr(models[2]));
 
-			glBindTexture(GL_TEXTURE_2D, numberTexture);
+			//glBindTexture(GL_TEXTURE_2D, numberTexture->getID());
 
 			glDrawElements(GL_TRIANGLES, cubeVAO->getDrawCount(), GL_UNSIGNED_INT, nullptr);
 			
@@ -469,8 +487,5 @@ namespace Engine {
 			m_Window->onUpdate(elapsedTime);
 			elapsedTime = timer::getFrameTime();
 		}
-
-		glDeleteTextures(1, &letterTexture);
-		glDeleteTextures(1, &numberTexture);
 	}
 }

@@ -15,6 +15,5 @@ engineApp::~engineApp()
 
 Engine::Application* Engine::startApplication()
 {
-
 	return new engineApp();
 }
