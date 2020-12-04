@@ -23,6 +23,8 @@
 #include "rendering/vertexArray.h"
 #include "rendering/shader.h"
 
+#include "rendering/uniformBuffer.h"
+
 #include "platform/OpenGL/OpenGLShader.h"
 #include "platform/OpenGL/OpenGLTexture.h"
 
@@ -171,16 +173,9 @@ namespace Engine {
 	*
 	*/
 #pragma region TEXTURES
-
+		//NEED TO MAKE API AGNOSTIC
 		std::shared_ptr<OpenGLTexture> textureAtlas;
-		//letterTexture.reset(new OpenGLTexture("assets/textures/letterCube.png"));
 		textureAtlas.reset(new OpenGLTexture("assets/textures/letterAndNumberCube.png"));
-
-		/*
-		std::shared_ptr<OpenGLTexture> numberTexture;
-		numberTexture.reset(new OpenGLTexture("assets/textures/numberCube.png"));
-		*/
-
 		SubTexture letterTexture(textureAtlas, { 0.f, 0.f }, { 1.f, 0.5f });
 		SubTexture numberTexture(textureAtlas, { 0.f, 0.5f }, { 1.f, 1.f });
 
@@ -188,8 +183,8 @@ namespace Engine {
 
 
 #pragma region RAW_DATA
+
 		float cubeVertices[8 * 24] = {
-			//	 <------ Pos ------>  <--- normal --->  <-- UV -->
 				 0.5f,  0.5f, -0.5f,  0.f,  0.f, -1.f,	letterTexture.transformUV(0.f,   0.f).x,	letterTexture.transformUV(0.f,   0.f).y,
 				 0.5f, -0.5f, -0.5f,  0.f,  0.f, -1.f,	letterTexture.transformUV(0.f,   0.5f).x,	letterTexture.transformUV(0.f,   0.5f).y,
 				-0.5f, -0.5f, -0.5f,  0.f,  0.f, -1.f,	letterTexture.transformUV(0.33f, 0.5f).x,	letterTexture.transformUV(0.33f, 0.5f).y,
@@ -197,7 +192,7 @@ namespace Engine {
 				-0.5f, -0.5f, 0.5f,   0.f,  0.f,  1.f,	letterTexture.transformUV(0.33f, 0.5f).x,	letterTexture.transformUV(0.33f, 0.5f).y,
 				 0.5f, -0.5f, 0.5f,   0.f,  0.f,  1.f,	letterTexture.transformUV(0.66f, 0.5f).x,	letterTexture.transformUV(0.66f, 0.5f).y,
 				 0.5f,  0.5f, 0.5f,   0.f,  0.f,  1.f,	letterTexture.transformUV(0.66f, 0.f).x,	letterTexture.transformUV(0.66f, 0.f).y,
-				-0.5f,  0.5f, 0.5f,   0.f,  0.f,  1.f,	letterTexture.transformUV(0.33,  0.f).x,	letterTexture.transformUV(0.33,  0.f).y
+				-0.5f,  0.5f, 0.5f,   0.f,  0.f,  1.f,	letterTexture.transformUV(0.33,  0.f).x,	letterTexture.transformUV(0.33,  0.f).y,
 																										 
 				-0.5f, -0.5f, -0.5f,  0.f, -1.f,  0.f,	letterTexture.transformUV(1.f,   0.f).x,	letterTexture.transformUV(1.f,   0.f).y,
 				 0.5f, -0.5f, -0.5f,  0.f, -1.f,  0.f,	letterTexture.transformUV(0.66f, 0.f).x,	letterTexture.transformUV(0.66f, 0.f).y,
@@ -207,7 +202,7 @@ namespace Engine {
 				 0.5f,  0.5f, 0.5f,   0.f,  1.f,  0.f,	letterTexture.transformUV(0.f,   0.5f).x,	letterTexture.transformUV(0.f,   0.5f).y,
 				 0.5f,  0.5f, -0.5f,  0.f,  1.f,  0.f,	letterTexture.transformUV(0.f,   1.0f).x,	letterTexture.transformUV(0.f,   1.0f).y,
 				-0.5f,  0.5f, -0.5f,  0.f,  1.f,  0.f,	letterTexture.transformUV(0.33f, 1.0f).x,	letterTexture.transformUV(0.33f, 1.0f).y,
-				-0.5f,  0.5f, 0.5f,   0.f,  1.f,  0.f,	letterTexture.transformUV(0.3f,  0.5f).x,	letterTexture.transformUV(0.3f,  0.5f).y,
+				-0.5f,  0.5f, 0.5f,   0.f,  1.f,  0.f,	letterTexture.transformUV(0.3f,  0.5f).x,	letterTexture.transformUV(0.33f,  0.5f).y,
 																																		   
 				-0.5f,  0.5f, 0.5f,  -1.f,  0.f,  0.f,	letterTexture.transformUV(0.66f, 0.5f).x,	letterTexture.transformUV(0.66f, 0.5f).y,
 				-0.5f,  0.5f, -0.5f, -1.f,  0.f,  0.f,	letterTexture.transformUV(0.33f, 0.5f).x,	letterTexture.transformUV(0.33f, 0.5f).y,
@@ -219,40 +214,7 @@ namespace Engine {
 				 0.5f,  0.5f, 0.5f,   1.f,  0.f,  0.f,	letterTexture.transformUV(0.66f, 0.5f).x,	letterTexture.transformUV(0.66f, 0.5f).y,
 				 0.5f, -0.5f, 0.5f,   1.f,  0.f,  0.f,	letterTexture.transformUV(0.66f, 1.0f).x,	letterTexture.transformUV(0.66f, 1.0f).y
 		};
-		/*
-		float cubeVertices[8 * 24] = {
-			//	 <------ Pos ------>  <--- normal --->  <-- UV -->
-				 0.5f,  0.5f, -0.5f,  0.f,  0.f, -1.f,  0.f,   0.f,
-				 0.5f, -0.5f, -0.5f,  0.f,  0.f, -1.f,  0.f,   0.5f,
-				-0.5f, -0.5f, -0.5f,  0.f,  0.f, -1.f,  0.33f, 0.5f,
-				-0.5f,  0.5f, -0.5f,  0.f,  0.f, -1.f,  0.33f, 0.f,
 
-				-0.5f, -0.5f, 0.5f,   0.f,  0.f,  1.f,  0.33f, 0.5f,
-				 0.5f, -0.5f, 0.5f,   0.f,  0.f,  1.f,  0.66f, 0.5f,
-				 0.5f,  0.5f, 0.5f,   0.f,  0.f,  1.f,  0.66f, 0.f,
-				-0.5f,  0.5f, 0.5f,   0.f,  0.f,  1.f,  0.33,  0.f,
-
-				-0.5f, -0.5f, -0.5f,  0.f, -1.f,  0.f,  1.f,   0.f,
-				 0.5f, -0.5f, -0.5f,  0.f, -1.f,  0.f,  0.66f, 0.f,
-				 0.5f, -0.5f, 0.5f,   0.f, -1.f,  0.f,  0.66f, 0.5f,
-				-0.5f, -0.5f, 0.5f,   0.f, -1.f,  0.f,  1.0f,  0.5f,
-
-				 0.5f,  0.5f, 0.5f,   0.f,  1.f,  0.f,  0.f,   0.5f,
-				 0.5f,  0.5f, -0.5f,  0.f,  1.f,  0.f,  0.f,   1.0f,
-				-0.5f,  0.5f, -0.5f,  0.f,  1.f,  0.f,  0.33f, 1.0f,
-				-0.5f,  0.5f, 0.5f,   0.f,  1.f,  0.f,  0.3f,  0.5f,
-
-				-0.5f,  0.5f, 0.5f,  -1.f,  0.f,  0.f,  0.66f, 0.5f,
-				-0.5f,  0.5f, -0.5f, -1.f,  0.f,  0.f,  0.33f, 0.5f,
-				-0.5f, -0.5f, -0.5f, -1.f,  0.f,  0.f,  0.33f, 1.0f,
-				-0.5f, -0.5f, 0.5f,  -1.f,  0.f,  0.f,  0.66f, 1.0f,
-
-				 0.5f, -0.5f, -0.5f,  1.f,  0.f,  0.f,  1.0f,  1.0f,
-				 0.5f,  0.5f, -0.5f,  1.f,  0.f,  0.f,  1.0f,  0.5f,
-				 0.5f,  0.5f, 0.5f,   1.f,  0.f,  0.f,  0.66f, 0.5f,
-				 0.5f, -0.5f, 0.5f,   1.f,  0.f,  0.f,  0.66f, 1.0f
-		};
-		*/
 		float pyramidVertices[6 * 16] = {
 			//	 <------ Pos ------>  <--- colour ---> 
 				-0.5f, -0.5f, -0.5f,  0.8f, 0.2f, 0.8f, //  square Magneta
@@ -317,7 +279,7 @@ namespace Engine {
 
 		cubeVAO.reset(VertexArray::create());
 
-		BufferLayout cubeBL = { ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2 };
+		VertexBufferLayout cubeBL = { ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2 };
 		cubeVBO.reset(VertexBuffer::create(cubeVertices, sizeof(cubeVertices), cubeBL));
 
 		cubeIBO.reset(IndexBuffer::create(cubeIndices, 36));
@@ -332,7 +294,7 @@ namespace Engine {
 
 		pyramidVAO.reset(VertexArray::create());
 
-		BufferLayout pyramidBL = { ShaderDataType::Float3, ShaderDataType::Float3 };
+		VertexBufferLayout pyramidBL = { ShaderDataType::Float3, ShaderDataType::Float3 };
 		pyramidVBO.reset(VertexBuffer::create(pyramidVertices, sizeof(pyramidVertices), pyramidBL));
 
 		pyramidIBO.reset(IndexBuffer::create(pyramidIndices, 18));
@@ -346,33 +308,68 @@ namespace Engine {
 		*	Each shader object reads a text file and compiles it line by line into the OpenGL library shaders
 		*/
 #pragma region SHADERS
-
-		/*	API AGNOSTIC SHADER
-			CHANGE FILES: 
-		*		rederAPI.cpp
-		*		shader.h
-		*		OpenGLShader.h
-
+		/**\ API AGNOSTIC SHADER */
 		std::shared_ptr<Shader> FCShader;
-		FCShader.reset(Shader::create("./assets/shaders/flatColour.glsl"));
-
 		std::shared_ptr<Shader> TPShader;
+
+		FCShader.reset(Shader::create("./assets/shaders/flatColour.glsl"));
 		TPShader.reset(Shader::create("./assets/shaders/texturedPhong.glsl"));
-		*/
-		std::shared_ptr<OpenGLShader> FCShader;
-		FCShader.reset(new OpenGLShader("./assets/shaders/flatColour.glsl"));
-
-		std::shared_ptr<OpenGLShader> TPShader;
-		TPShader.reset(new OpenGLShader("./assets/shaders/texturedPhong.glsl"));
-
 #pragma endregion 
-
-		glm::mat4 view = glm::lookAt(
+		
+		
+		glm::mat4 cameraProj = glm::perspective(glm::radians(45.f), 1024.f / 800.f, 0.1f, 100.f); //!< Camera projection
+		glm::mat4 cameraView = glm::lookAt( //!< Camera view
 			glm::vec3(0.f, 0.f, 0.f),
 			glm::vec3(0.f, 0.f, -1.f),
 			glm::vec3(0.f, 1.f, 0.f)
 		);
-		glm::mat4 projection = glm::perspective(glm::radians(45.f), 1024.f / 800.f, 0.1f, 100.f);
+
+		/**\ Camera UBO */
+		uint32_t blockBindingPoint = 0;
+
+		UniformBufferLayout cameraLayout = { {"u_view", ShaderDataType::Mat4}, {"u_projection", ShaderDataType::Mat4} };
+
+		std::shared_ptr<UniformBuffer> cameraUBO;
+		cameraUBO.reset(UniformBuffer::create(cameraLayout));
+		cameraUBO->attachShaderBlock(FCShader, "b_camera");
+		cameraUBO->attachShaderBlock(TPShader, "b_camera");
+		cameraUBO->uploadData("u_projection", glm::value_ptr(cameraProj));
+		cameraUBO->uploadData("u_view", glm::value_ptr(cameraView));
+
+		/**\ Light UBO */
+		blockBindingPoint++;
+
+		glm::vec3 lightPos(0.f, 0.f, 4.f);
+		glm::vec3 lightView(0.f, 0.f, 0.f);
+		glm::vec3 lightColour(1.f, 1.f, 1.f);
+			
+		uint32_t lightsUBO;
+		uint32_t lightsDataSize = sizeof(glm::vec4) * 3; // *3 for each: lightPos, lightView, and lightColour. needs to be a vec4 because opengl doesn't use vec3 when allocating space
+
+		
+		glGenBuffers(1, &lightsUBO);
+		glBindBuffer(GL_UNIFORM_BUFFER, lightsUBO);
+		glBufferData(GL_UNIFORM_BUFFER, lightsDataSize, nullptr, GL_DYNAMIC_DRAW);
+		glBindBufferRange(GL_UNIFORM_BUFFER, blockBindingPoint, lightsUBO, 0, lightsDataSize);
+
+		/**\	Attaching to the shader
+		*		blockIndex is the binding point in the shader
+		*		b_lights is the uniform block name in the shader glsl file
+		*/
+
+		uint32_t blockIndex = glGetUniformBlockIndex(TPShader->getID(), "b_lights");
+		glUniformBlockBinding(TPShader->getID(), blockIndex, blockBindingPoint);
+
+		/**\ Allocates projection and view sizes in the memory
+		*	 Has a 4 byte padding between each subdata. This is because of opengl layout rule stating a vec3 has a base alignment of 4N.
+		*	 
+		*	 LightPOs, ViewPos, and LightColour need to be in the same order as in the .glsl shader file
+		*/
+		glBufferSubData(GL_UNIFORM_BUFFER, 0 * sizeof(glm::vec4), sizeof(glm::vec3), glm::value_ptr(lightPos));
+		glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof(glm::vec4), sizeof(glm::vec3), glm::value_ptr(lightView));
+		glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::vec4), sizeof(glm::vec3), glm::value_ptr(lightColour)); 
+
+
 
 		glm::mat4 models[3];
 		models[0] = glm::translate(glm::mat4(1.0f), glm::vec3(-2.f, 0.f, -6.f));
@@ -417,27 +414,6 @@ namespace Engine {
 			uniformLocation = glGetUniformLocation(FCShader->getID(), "u_model");
 			glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, glm::value_ptr(models[0])); // Must include <glm/gtc/type_ptr.hpp>
 
-			uniformLocation = glGetUniformLocation(FCShader->getID(), "u_view");
-			glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, glm::value_ptr(view));
-
-			uniformLocation = glGetUniformLocation(FCShader->getID(), "u_projection");
-			glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, glm::value_ptr(projection));
-
-			/*
-			uniformLocation = glGetUniformLocation(FCShader->getID(), "u_lightColour");
-			glUniform3f(uniformLocation, 1.f, 1.f, 1.f);
-
-			uniformLocation = glGetUniformLocation(FCShader->getID(), "u_lightPos");
-			glUniform3f(uniformLocation, 1.f, 4.f, 6.f);
-
-			uniformLocation = glGetUniformLocation(FCShader->getID(), "u_viewPos");
-			glUniform3f(uniformLocation, 0.f, 0.f, 0.f);
-
-			glBindTexture(GL_TEXTURE_2D, letterTexture);
-			uniformLocation = glGetUniformLocation(FCShader->getID(), "u_texData");
-			glUniform1i(uniformLocation, 0);
-			*/
-
 			glDrawElements(GL_TRIANGLES, 3 * 6, GL_UNSIGNED_INT, nullptr);
 
 			
@@ -452,21 +428,6 @@ namespace Engine {
 
 			uniformLocation = glGetUniformLocation(TPShader->getID(), "u_model");
 			glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, glm::value_ptr(models[1]));
-
-			uniformLocation = glGetUniformLocation(TPShader->getID(), "u_view");
-			glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, glm::value_ptr(view));
-
-			uniformLocation = glGetUniformLocation(TPShader->getID(), "u_projection");
-			glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, glm::value_ptr(projection));
-
-			uniformLocation = glGetUniformLocation(TPShader->getID(), "u_lightColour");
-			glUniform3f(uniformLocation, 1.f, 1.f, 1.f);
-
-			uniformLocation = glGetUniformLocation(TPShader->getID(), "u_lightPos");
-			glUniform3f(uniformLocation, 1.f, 4.f, 6.f);
-
-			uniformLocation = glGetUniformLocation(TPShader->getID(), "u_viewPos");
-			glUniform3f(uniformLocation, 0.f, 0.f, 0.f);
 
 			glBindTexture(GL_TEXTURE_2D, textureAtlas->getID());
 			uniformLocation = glGetUniformLocation(TPShader->getID(), "u_texData");

@@ -1,11 +1,13 @@
 /**\ file renderAPI.cpp */
 #include "engine_pch.h"
 #include "rendering/renderAPI.h"
+#include "rendering/uniformBuffer.h"
 #include "rendering/indexBuffer.h"
 #include "rendering/vertexBuffer.h"
 #include "rendering/vertexArray.h"
 #include "rendering/shader.h"
 
+#include "platform/OpenGL/OpenGLUniformBuffer.h"
 #include "platform/OpenGL/OpenGLIndexBuffer.h"
 #include "platform/OpenGL/OpenGLVertexBuffer.h"
 #include "platform/OpenGL/OpenGLVertexArray.h"
@@ -15,7 +17,7 @@
 namespace Engine {
 	RenderAPI::API RenderAPI::s_currentAPI = RenderAPI::API::OpenGL;
 
-	IndexBuffer* IndexBuffer::create(uint32_t* indices, uint32_t count)
+	UniformBuffer* UniformBuffer::create(const UniformBufferLayout& arg_layout)
 	{
 		switch (RenderAPI::getAPI())
 		{
@@ -23,7 +25,7 @@ namespace Engine {
 			LOG_ERROR("No rendering API: Not supported");
 			break;
 		case RenderAPI::API::OpenGL:
-			return new OpenGLIndexBuffer(indices, count);
+			return new OpenGLUniformBuffer(arg_layout);
 			break;
 		case RenderAPI::API::Direct3d:
 			LOG_ERROR("Direct3d rendering API: Not supported");
@@ -34,7 +36,7 @@ namespace Engine {
 		}
 	}
 
-	VertexBuffer* VertexBuffer::create(void* vertices, uint32_t size, BufferLayout layout)
+	IndexBuffer* IndexBuffer::create(uint32_t* arg_indices, uint32_t arg_count)
 	{
 		switch (RenderAPI::getAPI())
 		{
@@ -42,7 +44,26 @@ namespace Engine {
 			LOG_ERROR("No rendering API: Not supported");
 			break;
 		case RenderAPI::API::OpenGL:
-			return new OpenGLVertexBuffer(vertices, size, layout);
+			return new OpenGLIndexBuffer(arg_indices, arg_count);
+			break;
+		case RenderAPI::API::Direct3d:
+			LOG_ERROR("Direct3d rendering API: Not supported");
+			break;
+		case RenderAPI::API::Vulkan:
+			LOG_ERROR("Vulkan rendering API: Not supported");
+			break;
+		}
+	}
+
+	VertexBuffer* VertexBuffer::create(void* arg_vertices, uint32_t arg_size, const VertexBufferLayout& arg_layout)
+	{
+		switch (RenderAPI::getAPI())
+		{
+		case RenderAPI::API::None:
+			LOG_ERROR("No rendering API: Not supported");
+			break;
+		case RenderAPI::API::OpenGL:
+			return new OpenGLVertexBuffer(arg_vertices, arg_size, arg_layout);
 			break;
 		case RenderAPI::API::Direct3d:
 			LOG_ERROR("Direct3d rendering API: Not supported");
@@ -71,7 +92,7 @@ namespace Engine {
 			break;
 		}
 	}
-	/*	API AGNOSTIC SHADER
+	/**\ API AGNOSTIC SHADER */
 	Shader* Shader::create(const char* arg_VerFilepath, const char* arg_FragFilepath)
 	{
 		switch (RenderAPI::getAPI())
@@ -108,5 +129,4 @@ namespace Engine {
 			break;
 		}
 	}
-	*/
 }

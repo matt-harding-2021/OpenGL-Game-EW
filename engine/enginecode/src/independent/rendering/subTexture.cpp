@@ -24,6 +24,6 @@ namespace Engine {
 	glm::vec2 SubTexture::transformUV(float arg_U, float arg_V)
 	{
 		//return glm::vec2(m_UVStart.x + (m_UVEnd.x - m_UVStart.x) * glm::vec2(arg_U, arg_V).x, m_UVStart.y + (m_UVEnd.y - m_UVStart.y) * glm::vec2(arg_U, arg_V).y);
-		return m_UVStart + (m_UVEnd - m_UVStart) * glm::vec2(arg_U, arg_V);
+		return m_UVStart + ((m_UVEnd - m_UVStart) * glm::vec2(arg_U, arg_V));
 	}
 }

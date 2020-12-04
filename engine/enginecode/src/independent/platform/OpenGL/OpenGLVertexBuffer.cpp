@@ -6,20 +6,20 @@
 
 namespace Engine
 {
-	OpenGLVertexBuffer::OpenGLVertexBuffer(void* vertices, uint32_t size, BufferLayout layout) : m_layout(layout)
+	OpenGLVertexBuffer::OpenGLVertexBuffer(void* arg_vertices, uint32_t arg_size, const VertexBufferLayout& arg_layout) : m_layout(arg_layout)
 	{
 		glCreateBuffers(1, &m_OpenGL_ID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_OpenGL_ID);
-		glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_DYNAMIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, arg_size, arg_vertices, GL_DYNAMIC_DRAW);
 	}
 
 	OpenGLVertexBuffer::~OpenGLVertexBuffer()
 	{
 		glDeleteBuffers(1, &m_OpenGL_ID);
 	}
-	void OpenGLVertexBuffer::edit(void* vertices, uint32_t size, uint32_t offset)
+	void OpenGLVertexBuffer::edit(void* arg_vertices, uint32_t arg_size, uint32_t arg_offset)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, m_OpenGL_ID);
-		glBufferSubData(GL_ARRAY_BUFFER, offset, size, vertices);
+		glBufferSubData(GL_ARRAY_BUFFER, arg_offset, arg_size, arg_vertices);
 	}
 }

@@ -11,10 +11,15 @@ namespace Engine
 		{
 			switch (type)
 			{
-			case Engine::ShaderDataType::Float: return GL_FLOAT;
-			case Engine::ShaderDataType::Float2: return GL_FLOAT;
-			case Engine::ShaderDataType::Float3: return GL_FLOAT;
-			case Engine::ShaderDataType::Float4: return GL_FLOAT;
+			case ShaderDataType::Byte4: return GL_UNSIGNED_BYTE;
+			case ShaderDataType::Short: return GL_SHORT;
+			case ShaderDataType::Short2: return GL_SHORT;
+			case ShaderDataType::Short3: return GL_SHORT;
+			case ShaderDataType::Short4: return GL_SHORT;
+			case ShaderDataType::Float: return GL_FLOAT;
+			case ShaderDataType::Float2: return GL_FLOAT;
+			case ShaderDataType::Float3: return GL_FLOAT;
+			case ShaderDataType::Float4: return GL_FLOAT;
 			default: return GL_INVALID_ENUM;
 			}
 		}

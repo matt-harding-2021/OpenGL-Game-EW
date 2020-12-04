@@ -5,6 +5,7 @@ namespace Engine {
 	class RenderAPI
 	{
 	public:
+		/**\ Enum class for the  */
 		enum class API
 		{
 			None = 0,
