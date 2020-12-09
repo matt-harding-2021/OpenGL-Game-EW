@@ -6,16 +6,56 @@
 #include "rendering/vertexBuffer.h"
 #include "rendering/vertexArray.h"
 #include "rendering/shader.h"
+#include "rendering/texture.h"
 
 #include "platform/OpenGL/OpenGLUniformBuffer.h"
 #include "platform/OpenGL/OpenGLIndexBuffer.h"
 #include "platform/OpenGL/OpenGLVertexBuffer.h"
 #include "platform/OpenGL/OpenGLVertexArray.h"
 #include "platform/OpenGL/OpenGLShader.h"
+#include "platform/OpenGL/OpenGLTexture.h"
 
 #include "systems/logging.h"
 namespace Engine {
 	RenderAPI::API RenderAPI::s_currentAPI = RenderAPI::API::OpenGL;
+
+	Texture* Texture::create(const char* arg_file)
+	{
+		switch (RenderAPI::getAPI())
+		{
+		case RenderAPI::API::None:
+			LOG_ERROR("No rendering API: Not supported");
+			break;
+		case RenderAPI::API::OpenGL:
+			return new OpenGLTexture(arg_file);
+			break;
+		case RenderAPI::API::Direct3d:
+			LOG_ERROR("Direct3d rendering API: Not supported");
+			break;
+		case RenderAPI::API::Vulkan:
+			LOG_ERROR("Vulkan rendering API: Not supported");
+			break;
+		}
+	}
+
+	Texture* Texture::create(uint32_t arg_width, uint32_t arg_height, uint32_t arg_channels, unsigned char* arg_data)
+	{
+		switch (RenderAPI::getAPI())
+		{
+		case RenderAPI::API::None:
+			LOG_ERROR("No rendering API: Not supported");
+			break;
+		case RenderAPI::API::OpenGL:
+			return new OpenGLTexture(arg_width, arg_height, arg_channels, arg_data);
+			break;
+		case RenderAPI::API::Direct3d:
+			LOG_ERROR("Direct3d rendering API: Not supported");
+			break;
+		case RenderAPI::API::Vulkan:
+			LOG_ERROR("Vulkan rendering API: Not supported");
+			break;
+		}
+	}
 
 	UniformBuffer* UniformBuffer::create(const UniformBufferLayout& arg_layout)
 	{

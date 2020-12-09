@@ -61,6 +61,11 @@ namespace Engine {
 	private:
 		static Application* s_instance; //!< Singleton instance of the application
 		bool m_Running = true; //!< Bool controls application loop
+
+		bool m_mouseButton1Pressed = false;
+		glm::vec2 m_mousePosCurrent = { 0,0 };
+		glm::vec2 m_mousePosStart = { 0,0 };
+
 	public:
 		virtual ~Application(); //!< Deconstructor
 		inline static Application& getInstance() { return *s_instance; } //!< Returns instance from singleton pattern

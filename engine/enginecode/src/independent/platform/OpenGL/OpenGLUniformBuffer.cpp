@@ -28,19 +28,19 @@ namespace Engine {
 	{
 		glDeleteBuffers(1, &m_OpenGL_ID);
 	}
-	/**\	Attaching to the shader
-	*		blockIndex is the binding point in the shader
-	*		blockName is the uniform block name in the shader glsl file
-	*/
 	void OpenGLUniformBuffer::attachShaderBlock(const std::shared_ptr<Shader>& arg_shader, const char* arg_blockName)
 	{
+		/**\	Attaching to the shader
+		*		blockIndex is the binding point in the shader
+		*		blockName is the uniform block name in the shader glsl file
+		*/
 		uint32_t blockIndex = glGetUniformBlockIndex(arg_shader->getID(), arg_blockName);
 		glUniformBlockBinding(arg_shader->getID(), blockIndex, m_blockNumber);
 	}
 	void OpenGLUniformBuffer::uploadData(const char* arg_Name, void* arg_Data)
 	{
 		/**\ Allocates data sizes in the memory */
-		auto& pair = m_uniformCache[arg_Name];
+		auto& pair = m_uniformCache[arg_Name]; // Possibly upload raw data instead of cache. Args: offset, size, data
 		glBufferSubData(GL_UNIFORM_BUFFER, pair.first, pair.second, arg_Data); //!< 
 	}
 }

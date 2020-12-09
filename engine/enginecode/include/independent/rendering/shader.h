@@ -1,7 +1,6 @@
 /**\ file shader.h */
 #pragma once
 
-#include <memory>
 #include <fstream>
 #include <array>
 
@@ -16,7 +15,6 @@ namespace Engine {
 		static Shader* create(const char* arg_Filepath);
 		~Shader() = default;
 
-		//uint32_t getID() { return m_OpenGL_ID; }
 		/**\ API AGNOSTIC SHADER CLASS */
 		virtual uint32_t getID() const = 0;
 

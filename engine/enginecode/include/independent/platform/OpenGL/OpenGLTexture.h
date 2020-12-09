@@ -2,25 +2,26 @@
 #pragma once
 #include <cstdint>
 #include <glm/glm.hpp>
+#include "rendering/texture.h"
 namespace Engine {
 	/** Class OpenGLTexture
 	*
 	*	Abstracted class for handling OpenGL textures.
 	*
-	*	Can generate a textur using a file, or taking the parameters direct.
+	*	Can generate a texture using a file, or taking the parameters direct.
 	*	Can further edit the textures offset (start position of the texture), size, and data.
 	*/
-	class OpenGLTexture
+	class OpenGLTexture : public Texture
 	{
 	public:
 		OpenGLTexture(const char* arg_file); //!< Constructor that takes the texture filepath
 		OpenGLTexture(uint32_t arg_width, uint32_t arg_height, uint32_t arg_channels, unsigned char* arg_data);
 		~OpenGLTexture();
-		inline uint32_t getID() { return m_OpenGL_ID; }
-		glm::vec2 getSize() { return m_size; }
-		//glm::vec2 getSizef() { return { static_cast<float>(m_size.x), static_cast<float>(m_size.y) }; } 
-		inline uint32_t getChannels() { return m_channels; }
-		void edit(glm::vec2 arg_offset, glm::vec2 arg_size, uint32_t arg_channels, unsigned char* arg_data);
+
+		virtual inline uint32_t getID() override { return m_OpenGL_ID; }
+		virtual glm::vec2 getSize() override { return m_size; }
+		virtual inline uint32_t getChannels() override { return m_channels; }
+		virtual void edit(glm::vec2 arg_offset, glm::vec2 arg_size, uint32_t arg_channels, unsigned char* arg_data) override;
 	private:
 		uint32_t m_OpenGL_ID;
 		glm::vec2 m_size;

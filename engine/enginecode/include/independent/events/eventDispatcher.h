@@ -1,15 +1,11 @@
-/** \file eventDispatcher.h
-*/
-
+/**\ file eventDispatcher.h */
 #pragma once
-
 #include "event.h"
 
-/**
-\class Event dispatcher
-*/
 namespace Engine {
-
+	/**\ Class Event dispatcher
+	*	 
+	*/
 	class EventDispatcher
 	{
 		template<typename T>
@@ -17,14 +13,14 @@ namespace Engine {
 	private:
 		Event& m_event;
 	public:
-		EventDispatcher(Event& event) : m_event(event) {}
+		EventDispatcher(Event& arg_event) : m_event(arg_event) {}
 		
 		template<typename T>
-		bool dispatch(EventFunc<T> func)
+		bool dispatch(EventFunc<T> arg_func)
 		{
 			if (m_event.getEventType() == T::getStaticType())
 			{
-				m_event.handle(func(*((T*)&m_event)));
+				m_event.handle(arg_func(*((T*)&m_event)));
 				return true;
 			}
 			return false;

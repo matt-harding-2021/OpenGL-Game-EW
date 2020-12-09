@@ -12,7 +12,7 @@ namespace Engine {
 	public:
 		static IndexBuffer* create(uint32_t* indices, uint32_t count);
 		virtual ~IndexBuffer() = default;
-		virtual inline uint32_t getRenderID() const = 0;
+		virtual inline uint32_t getID() const = 0;
 		virtual	inline uint32_t getCount() const = 0;
 	};
 }

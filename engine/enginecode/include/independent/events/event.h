@@ -1,14 +1,12 @@
-/** \file event.h
-*/
+/**\ file event.h */
 
 #pragma once
 
-/**
-\class Handling general attributes of all events
-*/
-
 namespace Engine {
 
+	/**\ Enum Class 
+	*	 Describing th types of events we might expect at run time
+	*/
 	enum class EventType 
 	{ 
 		None = 0, 
@@ -17,6 +15,10 @@ namespace Engine {
 		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
 	};
 
+	/**\ Enum Class
+	*	 This helps classify the event in a more abstract way
+	*	 Using bitwise operators lets an event fit into multiple categories
+	*/
 	enum EventCategory 
 	{ 
 		None = 0, 
@@ -27,6 +29,11 @@ namespace Engine {
 		EventCategoryMouseButton = 1 << 4,
 	};
 
+	/**\ Class Event
+	*	Handling general attributes of all events
+	*	Not a pure interface
+	*	It's abstract
+	*/
 	class Event
 	{
 	private:
@@ -38,6 +45,4 @@ namespace Engine {
 		inline void handle(bool isHandled) { m_handled = isHandled; } //!< Handles the event
 		inline bool isInCategory(EventCategory category) { return getCategoryFlags() & category; } //!< Is this event in the category?
 	};
-	//Not a pure interface
-	//It's abstract
 }

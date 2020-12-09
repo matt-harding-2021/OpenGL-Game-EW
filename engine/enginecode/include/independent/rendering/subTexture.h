@@ -1,8 +1,9 @@
 /**\ file subTexture.h */
 #pragma once
-#include "platform/OpenGL/OpenGLTexture.h"
 #include <glm/glm.hpp>
 #include <memory>
+
+#include "texture.h"
 
 namespace Engine {
 
@@ -10,7 +11,7 @@ namespace Engine {
 	{
 	public:
 		SubTexture();
-		SubTexture(const std::shared_ptr<OpenGLTexture>& arg_Texture, const glm::vec2& arg_UVStart, const glm::vec2& arg_UVEnd);
+		SubTexture(const std::shared_ptr<Texture>& arg_Texture, const glm::vec2& arg_UVStart, const glm::vec2& arg_UVEnd);
 		~SubTexture();
 
 		inline glm::vec2 getUVStart() { return m_UVStart; }
@@ -20,7 +21,7 @@ namespace Engine {
 
 		glm::vec2 transformUV(float arg_U, float arg_V); //!< Takes original co-ordinate and returns the co-ordinate in the atlas (re-scales)
 	private:
-		std::shared_ptr<OpenGLTexture> m_texture;
+		std::shared_ptr<Texture> m_texture;
 		glm::vec2 m_UVStart;
 		glm::vec2 m_UVEnd;
 		glm::vec2 m_size; 
