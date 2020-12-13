@@ -20,6 +20,11 @@
 #include "rendering/texture.h"
 #include "rendering/subTexture.h"
 
+#include "rendering/renderer3D.h"	
+#include "rendering/renderer2D.h"
+
+#include <string>
+
 namespace Engine {
 
 	Application* Application::s_instance = nullptr; //!< Single instance of application ensures only one can be open at a time
@@ -46,7 +51,6 @@ namespace Engine {
 
 		m_Timer = std::make_shared<timer>();
 		m_Timer->start();
-
 
 #ifdef NG_PLATFORM_WINDOWS //!< If the platform used is windows, we can use OpenGL as it is supported 
 		m_windowsSystem = std::make_shared<GLFWWindowsSystem>(); 
@@ -83,17 +87,17 @@ namespace Engine {
 	{
 		EventDispatcher dispatcher(e); //!< Creating the dispatcher with reference to the event called
 		
-		//!< Key events
+		/**\ Key Events */
 		dispatcher.dispatch<KeyPressedEvent>(std::bind(&Application::onKeyPressed, this, std::placeholders::_1));
 		dispatcher.dispatch<KeyReleasedEvent>(std::bind(&Application::onKeyReleased, this, std::placeholders::_1));
 
-		//!< Mouse events
+		/**\ Mouse Events */
 		dispatcher.dispatch<MouseButtonPressedEvent>(std::bind(&Application::onMouseButtonPressed, this, std::placeholders::_1));
 		dispatcher.dispatch<MouseButtonReleasedEvent>(std::bind(&Application::onMouseButtonReleased, this, std::placeholders::_1));
 		dispatcher.dispatch<MouseMovedEvent>(std::bind(&Application::onMouseMoved, this, std::placeholders::_1));
 		dispatcher.dispatch<MouseScrolledEvent>(std::bind(&Application::onMouseScrolled, this, std::placeholders::_1));
 
-		//!< Window events
+		/**\ Window Events */
 		dispatcher.dispatch<WindowCloseEvent>(std::bind(&Application::onWindowClose, this, std::placeholders::_1));
 		dispatcher.dispatch<WindowFocusEvent>(std::bind(&Application::onWindowFocus, this, std::placeholders::_1));
 		dispatcher.dispatch<WindowLostFocusEvent>(std::bind(&Application::onWindowLostFocus, this, std::placeholders::_1));
@@ -121,7 +125,7 @@ namespace Engine {
 		return true;
 	}
 	bool Application::onMouseMoved(MouseMovedEvent& e) { 
-		m_mousePosCurrent = glm::vec2(e.getPos().x, e.getPos().y);
+		m_mousePosCurrent = glm::vec2(e.getPos().x, e.getPos().y); //!< Updates the current position every time the mouse is moved
 		//LOG_INFO("Mouse Moved: {0}x{1}", e.getPos().x, e.getPos().y);
 		return true; 
 	}
@@ -153,28 +157,26 @@ namespace Engine {
 
 
 	/**	Once the app is initialised in entrypoint.h, app.run() begins the actual program. Contains: 
-	*		OpenGL setup 
+	*		OpenGL setup (in API agnostic classes)
 	*		Event loop with input polling
 	*		Per frame update functions 
+	*		Including rendering
 	*/
 	void Application::run()
 	{
-
-	
 #pragma region TEXTURES
-		/**	Implementing the abstracted OpenGL Textures
-		*
-		*/
-		//NEED TO MAKE API AGNOSTIC
+		/**	Implementing the abstracted OpenGL Textures	*/
 		std::shared_ptr<Texture> textureAtlas;
-		textureAtlas.reset(Texture::create("assets/textures/letterAndNumberCube(Dark).png"));
-		SubTexture letterTexture(textureAtlas, { 0.f, 0.f }, { 1.f, 0.5f });
-		SubTexture numberTexture(textureAtlas, { 0.f, 0.5f }, { 1.f, 1.f });
+		textureAtlas.reset(Texture::create("assets/textures/letterAndNumberCube(Dark).png")); //!< Creates a new texture using a png image from the filepath given. (I made a darker texture to hopefully show the phong lighting better)
+		SubTexture letterTexture(textureAtlas, { 0.f, 0.f }, { 1.f, 0.5f }); //!< Finds the letter texture within the texture atlas using UV coordinates
+		SubTexture numberTexture(textureAtlas, { 0.f, 0.5f }, { 1.f, 1.f }); //!< Finds the number texture within the texture atlas using UV coordinates
 
 		std::shared_ptr<Texture> pyramidTex;
 		unsigned char PxlColour[4] = { 155, 0, 55, 255 };
 		pyramidTex.reset(Texture::create(1, 1, 4, PxlColour));
 
+		std::shared_ptr<Texture> gearTexture;
+		gearTexture.reset(Texture::create("assets/textures/gear.png")); //!< Creates a new texture using a png image from the filepath given. (I made a darker texture to hopefully show the phong lighting better)
 #pragma endregion
 
 
@@ -189,22 +191,22 @@ namespace Engine {
 				 0.5f, -0.5f, 0.5f,   0.f,  0.f,  1.f,	numberTexture.transformUV(0.66f, 0.5f).x,	numberTexture.transformUV(0.66f, 0.5f).y,
 				 0.5f,  0.5f, 0.5f,   0.f,  0.f,  1.f,	numberTexture.transformUV(0.66f, 0.f).x,	numberTexture.transformUV(0.66f, 0.f).y,
 				-0.5f,  0.5f, 0.5f,   0.f,  0.f,  1.f,	numberTexture.transformUV(0.33,  0.f).x,	numberTexture.transformUV(0.33,  0.f).y,
-																						 		
+
 				-0.5f, -0.5f, -0.5f,  0.f, -1.f,  0.f,	numberTexture.transformUV(1.f,   0.f).x,	numberTexture.transformUV(1.f,   0.f).y,
 				 0.5f, -0.5f, -0.5f,  0.f, -1.f,  0.f,	numberTexture.transformUV(0.66f, 0.f).x,	numberTexture.transformUV(0.66f, 0.f).y,
 				 0.5f, -0.5f, 0.5f,   0.f, -1.f,  0.f,	numberTexture.transformUV(0.66f, 0.5f).x,	numberTexture.transformUV(0.66f, 0.5f).y,
 				-0.5f, -0.5f, 0.5f,   0.f, -1.f,  0.f,	numberTexture.transformUV(1.0f,  0.5f).x,	numberTexture.transformUV(1.0f,  0.5f).y,
-																	   
+
 				 0.5f,  0.5f, 0.5f,   0.f,  1.f,  0.f,	numberTexture.transformUV(0.f,   0.5f).x,	numberTexture.transformUV(0.f,   0.5f).y,
 				 0.5f,  0.5f, -0.5f,  0.f,  1.f,  0.f,	numberTexture.transformUV(0.f,   1.0f).x,	numberTexture.transformUV(0.f,   1.0f).y,
 				-0.5f,  0.5f, -0.5f,  0.f,  1.f,  0.f,	numberTexture.transformUV(0.33f, 1.0f).x,	numberTexture.transformUV(0.33f, 1.0f).y,
 				-0.5f,  0.5f, 0.5f,   0.f,  1.f,  0.f,	numberTexture.transformUV(0.3f,  0.5f).x,	numberTexture.transformUV(0.33f,  0.5f).y,
-																								
+
 				-0.5f,  0.5f, 0.5f,  -1.f,  0.f,  0.f,	numberTexture.transformUV(0.66f, 0.5f).x,	numberTexture.transformUV(0.66f, 0.5f).y,
 				-0.5f,  0.5f, -0.5f, -1.f,  0.f,  0.f,	numberTexture.transformUV(0.33f, 0.5f).x,	numberTexture.transformUV(0.33f, 0.5f).y,
 				-0.5f, -0.5f, -0.5f, -1.f,  0.f,  0.f,	numberTexture.transformUV(0.33f, 1.0f).x,	numberTexture.transformUV(0.33f, 1.0f).y,
 				-0.5f, -0.5f, 0.5f,  -1.f,  0.f,  0.f,	numberTexture.transformUV(0.66f, 1.0f).x,	numberTexture.transformUV(0.66f, 1.0f).y,
-																							   
+
 				 0.5f, -0.5f, -0.5f,  1.f,  0.f,  0.f,	numberTexture.transformUV(1.0f,  1.0f).x,	numberTexture.transformUV(1.0f,  1.0f).y,
 				 0.5f,  0.5f, -0.5f,  1.f,  0.f,  0.f,	numberTexture.transformUV(1.0f,  0.5f).x,	numberTexture.transformUV(1.0f,  0.5f).y,
 				 0.5f,  0.5f, 0.5f,   1.f,  0.f,  0.f,	numberTexture.transformUV(0.66f, 0.5f).x,	numberTexture.transformUV(0.66f, 0.5f).y,
@@ -221,7 +223,7 @@ namespace Engine {
 				-0.5f, -0.5f, -0.5f,		-0.8944f, 0.4472f, 0.f,		0.33f, 0.25f,		// triangle Green
 				-0.5f, -0.5f,  0.5f,		-0.8944f, 0.4472f, 0.f,		0.66f, 0.25f,
 				 0.0f,  0.5f,  0.0f,		-0.8944f, 0.4472f, 0.f,		0.5f, 0.f,
-																		
+
 				-0.5f, -0.5f,  0.5f,		0.f, 0.4472f, 0.8944f,		0.f, 0.f,		// triangle Red
 				 0.5f, -0.5f,  0.5f,		0.f, 0.4472f, 0.8944f,		0.f, 0.f,
 				 0.0f,  0.5f,  0.0f,		0.f, 0.4472f, 0.8944f,		0.f, 0.f,
@@ -260,7 +262,6 @@ namespace Engine {
 			22, 23, 20
 		};
 #pragma endregion
-
 #pragma region GL_BUFFERS
 		/**	Implementing the abstracted frame buffers for OpenGL
 		*	Doesn't include any actual openGL library calls.
@@ -272,7 +273,7 @@ namespace Engine {
 		/**\ Creates new abstracted buffer objects for a cube */
 		std::shared_ptr<VertexArray> cubeVAO; //!< Vertex Array Object,
 		std::shared_ptr<VertexBuffer> cubeVBO; //!< Vertex Buffer Object,
-		std::shared_ptr<IndexBuffer> cubeIBO; //!< Index BufferObject
+		std::shared_ptr<IndexBuffer> cubeIBO; //!< Index Buffer Object
 
 		cubeVAO.reset(VertexArray::create());
 
@@ -284,7 +285,7 @@ namespace Engine {
 		cubeVAO->addVertexBuffer(cubeVBO);
 		cubeVAO->setIndexBuffer(cubeIBO);
 
-		
+
 		std::shared_ptr<VertexArray> pyramidVAO;
 		std::shared_ptr<VertexBuffer> pyramidVBO;
 		std::shared_ptr<IndexBuffer> pyramidIBO;
@@ -300,67 +301,67 @@ namespace Engine {
 #pragma endregion
 #pragma region SHADERS
 		/**	Implemnting the abstracted OpenGL Shaders
-		*	Using the Phong lighting model
+		*	Shader3D uses the Phong lighting model
 		*	Each shader object reads a text file and compiles it line by line into the OpenGL library shaders
 		*/
+		std::shared_ptr<Shader> Shader3D;
+		Shader3D.reset(Shader::create("./assets/shaders/Shader3D.glsl"));
 
-		/**\ API AGNOSTIC SHADER */
-		std::shared_ptr<Shader> TPShader;
-		TPShader.reset(Shader::create("./assets/shaders/texturedPhong.glsl"));
 #pragma endregion 
-#pragma region UBOS
-		/**\ Camera UBO */
-		std::shared_ptr<UniformBuffer> cameraUBO;
+#pragma region MATERIALS
+		/** Creating the materials
+		*	to be used specifically with the renderer3d.
+		*	Each material takes a texture, and a shader to be used when rendring.
+		*	Taking a shader lets us potentially use different lighting effects on different objects within the 3D world
+		*/
+		std::shared_ptr<Material> pyramidMaterial;
+		pyramidMaterial.reset(new Material(Shader3D, { 1.f, 1.f, 1.f, 1.f }));
 
-		/**\ Setting the type of data for the camera UBO */
-		UniformBufferLayout cameraLayout = { {"u_view", ShaderDataType::Mat4}, {"u_projection", ShaderDataType::Mat4} };
-		glm::mat4 cameraView = glm::lookAt( //!< Camera view
-			glm::vec3(0.f, 0.f, 0.f),
-			glm::vec3(0.f, 0.f, -1.f),
-			glm::vec3(0.f, 1.f, 0.f)
+		std::shared_ptr<Material> letterCubeMaterial;
+		letterCubeMaterial.reset(new Material(Shader3D, textureAtlas));
+
+		std::shared_ptr<Material> numberCubeMaterial;
+		numberCubeMaterial.reset(new Material(Shader3D, textureAtlas));
+#pragma endregion
+#pragma region RENDERERS
+		/**\ Renderer3D */
+		Renderer3D::init();
+		Renderer3D::uploadCamera(
+			Shader3D,
+			glm::lookAt(					//!< Camera view
+				glm::vec3(2.f, 2.f, 0.f),
+				glm::vec3(0.f, 0.f, -6.f),
+				glm::vec3(0.f, 1.f, 0.f)
+			),
+			glm::perspective(glm::radians(45.f), 1024.f / 800.f, 0.1f, 100.f) //!< Camera projection
 		);
-		glm::mat4 cameraProj = glm::perspective(glm::radians(45.f), 1024.f / 800.f, 0.1f, 100.f); //!< Camera projection
+		Renderer3D::uploadLights(
+			Shader3D,
+			glm::vec3(2.f, 1.f, -6.f),		//!< Lights position
+			glm::vec3(0.f, 0.f, 0.f),		//!< Lights view
+			glm::vec3(1.f, 1.f, 1.f),		//!< Lights colour
+			glm::vec4(1.f, 1.f, 1.f, 1.f)	//!< Lights tint
+		);
 
-		/**\ Initializing the camera UBO using the data */
-		cameraUBO.reset(UniformBuffer::create(cameraLayout));
-
-		cameraUBO->uploadData("u_view", glm::value_ptr(cameraView)); //!< Uploading the view
-		cameraUBO->uploadData("u_projection", glm::value_ptr(cameraProj)); //!< Uploading the projection
-
-		cameraUBO->attachShaderBlock(TPShader, "b_camera"); //!< Updating the UBO with the shader and position of uniforms within the shader
-
-
-
-		/**\ Light UBO */
-		std::shared_ptr<UniformBuffer> lightsUBO;
-
-		/**\ Setting the type of data for the lights UBO */
-		UniformBufferLayout lightsLayout = { {"u_lightPos", ShaderDataType::Float3}, {"u_viewPos", ShaderDataType::Float3}, {"u_lightColour", ShaderDataType::Float3}, {"u_tint", ShaderDataType::Float3} };
-		glm::vec3 lightPos(0.f, 0.f, 4.f);
-		glm::vec3 lightView(0.f, 0.f, 0.f);
-		glm::vec3 lightColour(1.f, 1.f, 1.f);
-		glm::vec3 tintColour(1.f, 1.f, 1.f);
-
-		/**\ Initializing the lights UBO using the data */
-		lightsUBO.reset(UniformBuffer::create(lightsLayout));
-
-		lightsUBO->uploadData("u_lightPos", glm::value_ptr(lightPos));		 //!< Uploading the position
-		lightsUBO->uploadData("u_viewPos", glm::value_ptr(lightView));		 //!< Uploading the view position
-		lightsUBO->uploadData("u_lightColour", glm::value_ptr(lightColour)); //!< Uploading the colour
-		lightsUBO->uploadData("u_tint", glm::value_ptr(tintColour));		 //!< Uploading the tint
-
-		lightsUBO->attachShaderBlock(TPShader, "b_lights"); //!< Updating the UBO with the shader and position of uniforms within the shader
+		/**\ Renderer2D */
+		Renderer2D::init();
+		Renderer2D::uploadData(
+			glm::mat4(1.f),
+			glm::ortho(0.f, static_cast<float>(m_Window->getWidth()), static_cast<float>(m_Window->getHeight()), 0.f)
+		);
 #pragma endregion 
 
+		std::string fpsStr;
+		std::string camStr = std::string("Camera: Top-Right");
 
-		/**\ Setting the model transforms */
+		/**\ Setting the model locations */
 		glm::mat4 models[3];
 		models[0] = glm::translate(glm::mat4(1.0f), glm::vec3(-2.f, 0.f, -6.f));
 		models[1] = glm::translate(glm::mat4(1.0f), glm::vec3(0.f, 0.f, -6.f));
 		models[2] = glm::translate(glm::mat4(1.0f), glm::vec3(2.f, 0.f, -6.f));
 
-		glEnable(GL_DEPTH_TEST);
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		//glClearColor(1.f, 1.f, 1.f, 1.f);
+		glClearColor(1.f, 1.f, 1.f, 1.f);
 		float elapsedTime = 0;
 
 		/**	The main event loop for the application. Contains:
@@ -370,91 +371,151 @@ namespace Engine {
 		while (m_Running) {
 
 			timer::startFrameTimer();
-			//LOG_INFO("fps: {0}", 1.f / timer::getFrameTime());
 			float totalTimeElapsed = timer::getMarkerTimer();
-			//LOG_INFO("totalTimeElapsed: {0}", totalTimeElapsed);
 
-
-			//if (InputPoller::isKeyPressed(NG_KEY_W)) LOG_INFO("Input Poller: W Pressed");
-			//if (InputPoller::isMouseButtonPressed(NG_MOUSE_BUTTON_1)) LOG_ERROR("Mouse Button 1 Pressed");
-			//LOG_INFO("Mouse Pos: {0} x {1}", InputPoller::getMousePosition().x, InputPoller::getMousePosition().y);
-
-
-
-			/*	Save as 0,0,0
-			*	Each frame add local rotation to world rotation
-			*	
-			*	Convert mouse x and y to the cube local rotation with regard to world rotation
-			*/
 			if (InputPoller::isMouseButtonPressed(NG_MOUSE_BUTTON_1)) {
-				//LOG_INFO("MouseCurrent: {0}, {1}", m_mousePosCurrent.x, m_mousePosCurrent.y);
-				//LOG_INFO("MouseStart: {0}, {1}", m_mousePosStart.x, m_mousePosStart.y);
-				//LOG_INFO("MouseDelta: {0}, {1}",  m_mousePosCurrent.x - m_mousePosStart.x, m_mousePosCurrent.y - m_mousePosStart.y);
 				glm::vec2 mouseDelta = m_mousePosCurrent - m_mousePosStart;
 				if (mouseDelta.x != 0.f)
-					for (auto& model : models) { model = glm::rotate(model, elapsedTime * mouseDelta.x, glm::vec3(0.f, 1.f, 0.f)); }
+					//for world coords: save current transform, set transform to (0,0,0), rotate, then transform back
+					models[0] = glm::rotate(models[0], elapsedTime * mouseDelta.x, glm::vec3(0.f, 1.f, 0.f));
 				if (mouseDelta.y != 0.f)
-					for (auto& model : models) { model = glm::rotate(model, elapsedTime * mouseDelta.y, glm::vec3(1.f, 0.f, 0.f)); }
+					models[0] = glm::rotate(models[0], elapsedTime * mouseDelta.y, glm::vec3(1.f, 0.f, 0.f));
 			}
-			else for (auto& model : models) { model = glm::rotate(model, elapsedTime, glm::vec3(0.f, 1.0, 0.f)); }
-
+			models[2] = glm::rotate(models[2], elapsedTime, glm::vec3(1.f, 1.f, 1.f));
 			m_mousePosStart = m_mousePosCurrent;
 			
+			if (InputPoller::isKeyPressed(NG_KEY_SPACE)) {
+				if (!m_spacePressed) {
+					switch (m_currentCamPos)
+					{
+					case 0:
+						Renderer3D::uploadCamera(
+							Shader3D,
+							glm::lookAt(					//!< Top-Left
+								glm::vec3(-3.f, 2.f, 0.f),
+								glm::vec3(0.f, 0.f, -6.f),
+								glm::vec3(0.f, 1.f, 0.f)
+							),
+							glm::perspective(glm::radians(45.f), 1024.f / 800.f, 0.1f, 100.f) //!< Camera projection
+						);
+						camStr = std::string("Camera: Top-Left");
+						m_currentCamPos++;
+						break;
+					case 1: 
+						Renderer3D::uploadCamera(
+							Shader3D,
+							glm::lookAt(					//!< Birds-Eye
+								glm::vec3(0.f, 6.f, -5.f),
+								glm::vec3(0.f, 0.f, -6.f),
+								glm::vec3(0.f, 1.f, 0.f)
+							),
+							glm::perspective(glm::radians(45.f), 1024.f / 800.f, 0.1f, 100.f) //!< Camera projection
+						);
+						camStr = std::string("Camera: Birds-Eye");
+						m_currentCamPos++;
+						break;
+					case 2:
+						Renderer3D::uploadCamera(
+							Shader3D,
+							glm::lookAt(					//!< Centre
+								glm::vec3(0.f, 0.f, 0.f),
+								glm::vec3(0.f, 0.f, -6.f),
+								glm::vec3(0.f, 1.f, 0.f)
+							),
+							glm::perspective(glm::radians(45.f), 1024.f / 800.f, 0.1f, 100.f) //!< Camera projection
+						);
+						camStr = std::string("Camera: Centre");
+						m_currentCamPos++;
+						break;
+					case 3:
+						Renderer3D::uploadCamera(
+							Shader3D,
+							glm::lookAt(					//!< Top-Right
+								glm::vec3(2.f, 2.f, 0.f),
+								glm::vec3(0.f, 0.f, -6.f),
+								glm::vec3(0.f, 1.f, 0.f)
+							),
+							glm::perspective(glm::radians(45.f), 1024.f / 800.f, 0.1f, 100.f) //!< Camera projection
+						);
+						camStr = std::string("Camera: Top-Right");
+						m_currentCamPos = 0;
+						break;
+					}
+				}
+				m_spacePressed = true;
+			}
+			else m_spacePressed = false;
 
+			if (InputPoller::isKeyPressed(NG_KEY_UP)) {
+				if (!m_directionKeyPressed[0]) {
+					LOG_INFO("UP");
+					models[1] = glm::translate(glm::mat4(1.0f), glm::vec3(0.f, 0.f, -6.5f));
+				}
+				m_directionKeyPressed[0] = true;
+			}
+			else m_directionKeyPressed[0] = false;
+			if (InputPoller::isKeyPressed(NG_KEY_DOWN)) {
+				if (!m_directionKeyPressed[1]) {
+					LOG_INFO("DOWN");
+					models[1] = glm::translate(glm::mat4(1.0f), glm::vec3(0.f, 0.f, -5.5f));
+				}
+				m_directionKeyPressed[1] = true;
+			}
+			else m_directionKeyPressed[1] = false;
+			if (InputPoller::isKeyPressed(NG_KEY_LEFT)) {
+				if (!m_directionKeyPressed[2]) {
+					LOG_INFO("LEFT");
+					models[1] = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.f, -6.f));
+				}
+				m_directionKeyPressed[2] = true;
+			}
+			else m_directionKeyPressed[2] = false;
+			if (InputPoller::isKeyPressed(NG_KEY_RIGHT)) {
+				if (!m_directionKeyPressed[3]) {
+					LOG_INFO("RIGHT");
+					models[1] = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.f, -6.f));
+				}
+				m_directionKeyPressed[3] = true;
+			}
+			else m_directionKeyPressed[3] = false;
+			if (m_directionKeyPressed[0] == false && m_directionKeyPressed[1] == false && m_directionKeyPressed[2] == false && m_directionKeyPressed[3] == false)
+				models[1] = glm::translate(glm::mat4(1.0f), glm::vec3(0.f, 0.f, -6.f));
 			
 
-			// RENDERING //
+			/**\ Rendering the scene */
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			glUseProgram(TPShader->getID());
+
+			Renderer3D::beginScene(); //!< Adds the depth testing
+
+			Renderer3D::submit(pyramidVAO, pyramidMaterial, models[0]); 
+			Renderer3D::submit(cubeVAO, letterCubeMaterial, models[1]);
+			Renderer3D::submit(cubeVAO, numberCubeMaterial, models[2]);
+
+			Renderer3D::endScene();
 
 
+			Renderer2D::beginScene(true); //!< Removes the depth testing
 
 
-			// PYRAMID BINDING //
-			glBindVertexArray(pyramidVAO->getID());
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pyramidIBO->getID());
-			glBindTexture(GL_TEXTURE_2D, pyramidTex->getID());
+			Renderer2D::submitQuad(
+				Quad::create({50.f, 540.f }, { 15.f, 15.f }),
+				gearTexture,
+				{ 1.f, 1.f, 1.f, 1.f },
+				m_badgeRotation+=3.f
+			);
 
-			// PYRAMID 1 RENDERING //
-			GLuint uniformLocation;
-			uniformLocation = glGetUniformLocation(TPShader->getID(), "u_model"); 
-			glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, glm::value_ptr(models[0])); // Must include <glm/gtc/type_ptr.hpp>
+			Renderer2D::submitText(fpsStr.c_str(), { 100.f, 550.f }, { 0.f, 0.f, 0.f, 1.f });
 
-			glDrawElements(GL_TRIANGLES, 3 * 6, GL_UNSIGNED_INT, nullptr);
+			Renderer2D::submitText(camStr.c_str(), { 550.f, 550.f }, { 1.f, 0.f, 0.f, 1.f });
 
-
-
-
-			// CUBE BINDING //
-			glBindVertexArray(cubeVAO->getID());
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIBO->getID());
-			glBindTexture(GL_TEXTURE_2D, textureAtlas->getID());
-			uniformLocation = glGetUniformLocation(TPShader->getID(), "u_texData"); // Can't replace with UBO because it is a sampler
-			glUniform1i(uniformLocation, 0);
-
-
-			// CUBE 1 RENDERING //
-			uniformLocation = glGetUniformLocation(TPShader->getID(), "u_model"); // Possibly replace other Uniforms with Uniform buffer objects
-			glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, glm::value_ptr(models[1]));
-
-			glDrawElements(GL_TRIANGLES, cubeVAO->getDrawCount(), GL_UNSIGNED_INT, nullptr);
-			
-
-			// CUBE 2 RENDERING //
-			uniformLocation = glGetUniformLocation(TPShader->getID(), "u_model");
-			glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, glm::value_ptr(models[2]));
-
-			glDrawElements(GL_TRIANGLES, cubeVAO->getDrawCount(), GL_UNSIGNED_INT, nullptr);
-			
-
-
-
-
-
-
+			Renderer2D::endScene();
 
 			m_Window->onUpdate(elapsedTime);
+
 			elapsedTime = timer::getFrameTime();
+
+			fpsStr = std::string("fps: ") + std::to_string((int)(1 / elapsedTime));
+			//LOG_INFO("fps: {0}", 1.f / elapsedTime);
 		}
 	}
 }

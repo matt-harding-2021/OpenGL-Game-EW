@@ -35,4 +35,3 @@ Engine::MouseScrolledEvent mse(offsetX, offsetY);
 
 bool OnResizeTrue(Engine::WindowResizeEvent& e) { return true; }
 bool OnResizeFalse(Engine::WindowResizeEvent& e) { return false; }
-

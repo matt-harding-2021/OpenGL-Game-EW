@@ -25,7 +25,7 @@ namespace Engine {
 	*/
 	OpenGLTexture::OpenGLTexture(uint32_t arg_width, uint32_t arg_height, uint32_t arg_channels, unsigned char* arg_data)
 	{
-		if (arg_data) { init(arg_width, arg_height, arg_channels, arg_data); }
+		init(arg_width, arg_height, arg_channels, arg_data); 
 	}
 
 	OpenGLTexture::~OpenGLTexture()
@@ -58,8 +58,8 @@ namespace Engine {
 	{
 		glBindTexture(GL_TEXTURE_2D, m_OpenGL_ID);
 		if (arg_data && arg_channels == m_channels) {
-			if (m_channels == 3) glTextureSubImage2D(GL_TEXTURE_2D, 0, arg_offset.x, arg_offset.y, arg_size.x, arg_size.y, GL_RGB, GL_UNSIGNED_BYTE, arg_data);
-			else if (m_channels == 4) glTextureSubImage2D(GL_TEXTURE_2D, 0, arg_offset.x, arg_offset.y, arg_size.x, arg_size.y, GL_RGBA, GL_UNSIGNED_BYTE, arg_data);
+			if (m_channels == 3) glTextureSubImage2D(m_OpenGL_ID, 0, arg_offset.x, arg_offset.y, arg_size.x, arg_size.y, GL_RGB, GL_UNSIGNED_BYTE, arg_data);
+			else if (m_channels == 4) glTextureSubImage2D(m_OpenGL_ID, 0, arg_offset.x, arg_offset.y, arg_size.x, arg_size.y, GL_RGBA, GL_UNSIGNED_BYTE, arg_data);
 		} 
 		else {
 			LOG_ERROR("OpenGLTexture::edit() error,  data:{0}  channels{1}", arg_data, arg_channels);

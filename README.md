@@ -1,2 +1,21 @@
 # CW2019
-You MUST use this repo to submit your coursework.
+
+Controls:
+
+UP ARROW KEY
+ Move centre object forwards
+
+DOWN ARROW KEY
+ Move centre object back
+
+LEFT ARROW KEY
+ Move centre object left
+
+RIGHT ARROW KEY
+ Move centre object right
+
+SPACE KEY
+ Change camera angle
+
+LEFT MOUSE BUTTON and MOVE MOUSE
+ Rotate left object (Uses local transforms)

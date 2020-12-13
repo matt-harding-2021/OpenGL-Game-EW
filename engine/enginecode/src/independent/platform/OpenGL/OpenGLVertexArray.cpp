@@ -34,12 +34,13 @@ namespace Engine
 		glDeleteVertexArrays(1, &m_OpenGL_ID);
 	}
 
-	void OpenGLVertexArray::addVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer)
+	void OpenGLVertexArray::addVertexBuffer(const std::shared_ptr<VertexBuffer>& arg_vertexBuffer)
 	{
+		m_vertexBuffer.push_back(arg_vertexBuffer);
 		glBindVertexArray(m_OpenGL_ID);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->getRenderID());
+		glBindBuffer(GL_ARRAY_BUFFER, arg_vertexBuffer->getRenderID());
 
-		const auto& layout = vertexBuffer->getLayout();
+		const auto& layout = arg_vertexBuffer->getLayout();
 		for (const auto& element : layout)
 		{
 			uint32_t normalised = GL_FALSE;
@@ -58,8 +59,8 @@ namespace Engine
 	}
 
 	//void OpenGLVertexArray::setIndexBuffer(const std::shared_ptr<OpenGLIndexBuffer>& indexBuffer)
-	void OpenGLVertexArray::setIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer)
+	void OpenGLVertexArray::setIndexBuffer(const std::shared_ptr<IndexBuffer>& arg_indexBuffer)
 	{
-		m_indexBuffer = indexBuffer;
+		m_indexBuffer = arg_indexBuffer;
 	}
 }

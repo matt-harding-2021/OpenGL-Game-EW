@@ -22,5 +22,6 @@ namespace Engine {
 
 		virtual inline uint32_t getID() const = 0;
 		virtual inline uint32_t getDrawCount() const = 0;
+		virtual inline std::shared_ptr<IndexBuffer> getIndexBuffer() const = 0;
 	};
 }

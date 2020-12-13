@@ -19,16 +19,17 @@
 
 namespace Engine {
 
-	/**
-	\class Application
-	Fundemental class of the engine. A singleton which runs the game loop infinitely.
-	Provides
-		Event management
-		Window implementation 
-		OpenGL context and Rendering
-		...
+	/**\Class Application
+	*	Fundemental class of the engine. A singleton which runs the game loop infinitely. Provides:
+	*	Event management
+	*	Window implementation 
+	*	OpenGL context 
+	*	Rendering:
+	*		2D
+	*		3D
+	*		Text
+	*	User interaction
 	*/
-
 	class Application
 	{
 	protected:
@@ -38,7 +39,7 @@ namespace Engine {
 		std::shared_ptr<timer> m_Timer; //!< Timer object records timeframes and calculates timesteps
 
 
-		std::shared_ptr<System> m_windowsSystem; //!< 
+		std::shared_ptr<System> m_windowsSystem; //!< System class for the window. Start/stop interface
 		std::unique_ptr<Window> m_Window; //!< A single instance of a window
 
 
@@ -62,9 +63,16 @@ namespace Engine {
 		static Application* s_instance; //!< Singleton instance of the application
 		bool m_Running = true; //!< Bool controls application loop
 
-		bool m_mouseButton1Pressed = false;
+		bool m_directionKeyPressed[4] = { false, false, false, false }; //!< Boolean set depending on whether the direction keys are pressed. {up, dowm, left, right}
+
+		bool m_spacePressed = false; //!< Boolean set to true if a key is held down or false if released
+		int m_currentCamPos = 0; //!< Index of camera position
+
+		bool m_mouseButton1Pressed = false; //!< Boolean set to true if left mouse button is held down or false if released
 		glm::vec2 m_mousePosCurrent = { 0,0 };
 		glm::vec2 m_mousePosStart = { 0,0 };
+
+		float m_badgeRotation = 0.f; //!< Stores th fps badge rotation to be updated every frame
 
 	public:
 		virtual ~Application(); //!< Deconstructor

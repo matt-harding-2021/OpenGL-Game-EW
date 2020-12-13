@@ -1,8 +1,9 @@
-/**\ file renderer3D.h */
+	/**\ file renderer3D.h */
 #pragma once
 #include <unordered_map>
 
 #include "glm/glm.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 #include "vertexArray.h"
 #include "texture.h"
@@ -14,7 +15,6 @@
 #include "subTexture.h"
 
 namespace Engine {
-	using SceneWideUniforms = std::unordered_map<const char*, std::pair<ShaderDataType, void*>>;
 	/**\ Class Material 
 	*	 Holds a shader and uniform data associated
 	*/
@@ -54,11 +54,13 @@ namespace Engine {
 		void setTint(const glm::vec4& arg_tint) { m_tint = arg_tint; }
 		
 		constexpr static uint32_t flag_texture = 1 << 0; //!< 00000001. constexpr lets the compiler calculate it at compile time. 
-		//Specular tex
-		//Reflective tex
-		//Omissive tex
-		//Normal tex
-		//params struct with shrdptr for each texture
+		/** Possible textures to implement:
+		*	Specular
+		*	Reflctive
+		*	Ommisive
+		*	Normal
+		*/
+		//params struct with shared_ptr for each texture
 		//set flags for which ones needed at runtime
 		//flags would decide whether or not the texture is initialised or set to nullptr
 		constexpr static uint32_t flag_tint = 1 << 1;	 //!< 00000010
@@ -88,17 +90,32 @@ namespace Engine {
 	{
 	public:
 		static void init(); //!< Initializes the renderer
-		static void beginScene(const SceneWideUniforms& arg_uniforms);
+		static void uploadCamera(const std::shared_ptr<Shader> arg_shader, glm::mat4 arg_view, glm::mat4 arg_projection);
+		static void uploadLights(const std::shared_ptr<Shader> arg_shader, glm::vec3 arg_position, glm::vec3 arg_view, glm::vec3 arg_colour, glm::vec4 arg_tint);
+		static void beginScene();
 		static void submit(const std::shared_ptr<VertexArray>& arg_geometry, const std::shared_ptr<Material> arg_material, const glm::mat4& arg_model);
 		static void endScene();
 	private:
 		struct InternalData
 		{
-			SceneWideUniforms uniforms;
-			//UniformBuffer uniformBuffer;
-			std::shared_ptr<Texture> texture;
-			//SubTexture texture;
-			glm::vec4 tint;
+			std::shared_ptr<UniformBuffer> cameraUBO;
+			UniformBufferLayout cameraLayout = { //!< Setting the type of data for the camera UBO
+				{"u_view", ShaderDataType::Mat4},
+				{"u_projection", ShaderDataType::Mat4}
+			};
+			
+			std::shared_ptr<UniformBuffer> lightsUBO;
+			UniformBufferLayout lightsLayout = { //!< Setting the type of data for the lights UBO
+				{"u_lightPos", ShaderDataType::Float3},
+				{"u_viewPos", ShaderDataType::Float3},
+				{"u_lightColour", ShaderDataType::Float3},
+				{"u_tint", ShaderDataType::Float3}
+			};
+
+			/**\ Default texture and tint in case none is passed*/
+			unsigned char PxlColour[4] = { 55, 0, 155, 255 };
+			std::shared_ptr<Texture> defaultTexture;
+			glm::vec4 defaultTint;
 		};
 		static std::shared_ptr<InternalData> s_data; //!< One set of data per application. It is private so only this class can edit the data.
 	}; 

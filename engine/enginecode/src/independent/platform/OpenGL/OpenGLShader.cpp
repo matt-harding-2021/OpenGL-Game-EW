@@ -147,7 +147,7 @@ namespace Engine
 	void OpenGLShader::uploadFloat4(const char* arg_Name, const glm::vec4& arg_Value)
 	{
 		uint32_t uniformLocation = glGetUniformLocation(m_OpenGL_ID, arg_Name);
-		glUniform4f(uniformLocation, arg_Value.x, arg_Value.y, arg_Value.z, arg_Value.w);
+		glUniform4f(uniformLocation, arg_Value.x, arg_Value.y, arg_Value.z, arg_Value.w); //Error with renderer2d
 	}
 	void OpenGLShader::uploadMat4(const char* arg_Name, const glm::mat4& arg_Value)
 	{
