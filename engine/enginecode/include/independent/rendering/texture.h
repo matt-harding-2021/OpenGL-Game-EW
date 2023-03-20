@@ -15,7 +15,7 @@ namespace Engine {
 		virtual inline uint32_t getID() = 0;
 		virtual glm::vec2 getSize() = 0;
 		virtual inline uint32_t getChannels() = 0;
-		virtual void edit(glm::vec2 arg_offset, glm::vec2 arg_size, uint32_t arg_channels, unsigned char* arg_data) = 0;;
+		virtual void edit(glm::vec2 arg_offset, glm::vec2 arg_size, uint32_t arg_channels, unsigned char* arg_data) = 0;
 	private:
 		uint32_t m_OpenGL_ID;
 		glm::vec2 m_size;
