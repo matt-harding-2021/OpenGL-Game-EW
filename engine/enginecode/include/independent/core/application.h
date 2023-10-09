@@ -17,6 +17,8 @@
 
 #include "windows/window.h"
 
+#include "reactphysics3d.h"
+
 namespace Engine {
 
 	/**\Class Application
@@ -73,6 +75,8 @@ namespace Engine {
 		glm::vec2 m_mousePosStart = { 0,0 };
 
 		float m_badgeRotation = 0.f; //!< Stores th fps badge rotation to be updated every frame
+
+		std::shared_ptr<rp3d::DynamicsWorld> m_worldInstance;
 
 	public:
 		virtual ~Application(); //!< Deconstructor

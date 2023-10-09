@@ -2,8 +2,7 @@ workspace "Engine"
 	architecture "x64"
 	startproject "Sandbox"
 
-	configurations
-	{
+	configurations {
 		"Debug",
 		"Release"
 	}
@@ -24,16 +23,14 @@ project "Engine"
 	pchheader "engine_pch.h"
 	pchsource "engine/precompiled/engine_pch.cpp"
 	
-	files
-	{
+	files {
 		"%{prj.name}/enginecode/**.h",
 		"%{prj.name}/enginecode/**.cpp",
 		"engine/precompiled/engine_pch.h",
 		"engine/precompiled/engine_pch.cpp"
 	}
 
-	includedirs
-	{
+	includedirs {
 		"%{prj.name}/enginecode/",
 		"%{prj.name}/enginecode/include/independent",
 		"%{prj.name}/precompiled/",
@@ -42,23 +39,23 @@ project "Engine"
 		"vendor/Glad/include",
 		"vendor/glm/",
 		"vendor/stb_image",
-		"vendor/freetype2/include"
+		"vendor/freetype2/include",
+		"vendor/React3D/src",
 	}
 	
-	links 
-	{
+	links {
 		"GLFW",
 		"Glad",
 		"Freetype",
-		"assimp"
+		"assimp",
+		"React3D",
 	}
 	
 	filter "system:windows"
 		cppdialect "C++17"
 		systemversion "latest"
 
-		defines
-		{
+		defines {
 			"NG_PLATFORM_WINDOWS"
 		}
 
@@ -81,33 +78,31 @@ project "Sandbox"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("build/" .. outputdir .. "/%{prj.name}")
 
-	files
-	{
+	files {
 		"%{prj.name}/include/**.h",
 		"%{prj.name}/src/**.cpp"
 	}
 
-	includedirs
-	{
+	includedirs {
 		"%{prj.name}/include",
 		"engine/enginecode/",
 		"engine/enginecode/include/independent",
 		"engine/precompiled/",
 		"vendor/glm/",
-		"vendor/spdlog/include"
+		"vendor/spdlog/include",
+		"vendor/React3D/src",
 	}
 
-	links
-	{
-		"Engine"
+	links {
+		"Engine",
+		"React3D"
 	}
 
 	filter "system:windows"
 		cppdialect "C++17"
 		systemversion "latest"
 
-		defines
-		{
+		defines {
 			"NG_PLATFORM_WINDOWS"
 		}
 
@@ -131,14 +126,12 @@ project "Sandbox"
 		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 		objdir ("build/" .. outputdir .. "/%{prj.name}")
 
-        files 
-		{ 
+		files { 
 			"%{prj.name}/include/*.h",
 			"%{prj.name}/src/*.cpp"
 		}
 
-        includedirs
-		{ 
+		includedirs { 
 			"%{prj.name}/include/",
 			"vendor/googletest/googletest/include",
 			"engine/enginecode/",
@@ -154,8 +147,7 @@ project "Sandbox"
 			
 		}
 
-        links 
-		{ 
+		links { 
 			"googletest"
 		}
 		
@@ -176,14 +168,12 @@ project "Spike"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("build/" .. outputdir .. "/%{prj.name}")
 
-	files
-	{
+	files {
 		"%{prj.name}/include/**.h",
 		"%{prj.name}/src/**.cpp"
 	}
 
-	includedirs
-	{
+	includedirs {
 		"%{prj.name}/include",
 		"vendor/spdlog/include",
 		"vendor/stb_image",
@@ -191,21 +181,21 @@ project "Spike"
 		"vendor/glm/",
 		"vendor/assimp/include",
 		"vendor/Glad/include",
+		"vendor/React3D/src"
 	}
 	
-	links 
-	{
+	links {
 		"Freetype",
 		"assimp",
-		"Glad"
+		"Glad",
+		"React3D"
 	}
 	
 
 	filter "system:windows"
 		cppdialect "C++17"
 		systemversion "latest"
-		defines
-		{
+		defines {
 			"NG_PLATFORM_WINDOWS"
 		}
 
@@ -219,8 +209,6 @@ project "Spike"
 
 group "Vendor"
 
-
-
 	include "vendor/glfw"
 	include "vendor/googletest"
 	include "vendor/Glad"
@@ -228,3 +216,4 @@ group "Vendor"
 	include "vendor/zlib"
 	include "vendor/IrrXML"
 	include "vendor/assimp"
+	include "vendor"

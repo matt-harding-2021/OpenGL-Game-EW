@@ -64,6 +64,8 @@ namespace Engine {
 		InputPoller::setNativeWindow(m_Window->getNativeWindow());  //!< Refers which specific window we want the events to be polled at
 #endif
 
+		rp3d::Vector3 gravity = rp3d::Vector3(0.0, -0.1, 0.0);
+		m_worldInstance.reset(new rp3d::DynamicsWorld(gravity));
 	}
 
 	/**\ Very simple clean-up of the different systems used */
@@ -379,7 +381,7 @@ namespace Engine {
 					//for world coords: save current transform, set transform to (0,0,0), rotate, then transform back
 					models[0] = glm::rotate(models[0], elapsedTime * mouseDelta.x, glm::vec3(0.f, 1.f, 0.f));
 				if (mouseDelta.y != 0.f)
-					models[0] = glm::rotate(models[0], elapsedTime * mouseDelta.y, glm::vec3(1.f, 0.f, 0.f));
+					models[0] = glm::rotate(models[0], elapsedTime * -mouseDelta.y, glm::vec3(1.f, 0.f, 0.f));
 			}
 			models[2] = glm::rotate(models[2], elapsedTime, glm::vec3(1.f, 1.f, 1.f));
 			m_mousePosStart = m_mousePosCurrent;
@@ -516,6 +518,8 @@ namespace Engine {
 
 			fpsStr = std::string("fps: ") + std::to_string((int)(1 / elapsedTime));
 			//LOG_INFO("fps: {0}", 1.f / elapsedTime);
+
+			m_worldInstance->update(elapsedTime);
 		}
 	}
 }
